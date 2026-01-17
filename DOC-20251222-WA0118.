@@ -1,0 +1,748 @@
+#!/data/data/com.termux/files/usr/bin/python3
+import random
+from datetime import datetime, timedelta
+from ftth_client import FTTHClient
+import sys
+from pandas import date_range
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.prompt import Prompt
+from rich.text import Text
+from rich.align import Align
+from dataclasses import dataclass
+import requests
+import time
+import json
+import os
+import subprocess
+from typing import Dict,Any,Optional
+from rich.prompt import Confirm
+from rich.spinner import Spinner
+from rich.live import Live
+console = Console()
+API_URL = "https://fibre.mtn.ci/mtn-ftth-api"
+
+ENDPOINTS = {
+    "etudier_dossier": "/commerciale/rendezvous/rechercher-rdv-par-typerdv-par-statutabonnement",
+    "activation_mdp":"/commerciale/abonnement/visualiser-mdp-activation",
+    "souscription_forfait": "/commerciale/souscription/rechercher-souscriptions-en-attente"
+}
+
+
+
+# ---------------------------
+# FONCTIONS UTILITAIRES API
+
+TOKEN_FILE = "token.json"
+
+
+class TokenManager:
+    def __init__(self, username: str, password: str, signin_url: str, ttl: int = 600):
+        self.username = username
+        self.password = password
+        self.signin_url = signin_url
+        self.ttl = ttl
+        self.session = requests.Session()
+        self.token = None
+        self.expiry = 0
+        self._load()
+
+    def _load(self):
+        if not os.path.exists(TOKEN_FILE):
+            return
+        with open(TOKEN_FILE, "r") as f:
+            data = json.load(f)
+        if data.get("accessToken") and time.time() < data.get("expiry", 0) - 30:
+            self.token = data["accessToken"]
+            self.expiry = data["expiry"]
+
+    def _save(self):
+        with open(TOKEN_FILE, "w") as f:
+            json.dump({"accessToken": self.token, "expiry": self.expiry}, f)
+
+    def _valid(self):
+        return self.token and time.time() < self.expiry - 30
+
+    def _signin(self):
+        resp = self.session.post(
+            self.signin_url,
+            json={"username": self.username, "password": self.password},
+            headers={"Accept": "application/json", "Content-Type": "application/json"},
+            timeout=60
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        self.token = data.get("accessToken")
+        if not self.token:
+            raise RuntimeError("Token manquant")
+        self.expiry = time.time() + self.ttl
+        self._save()
+
+    def token_value(self):
+        if not self._valid():
+            self._signin()
+        return self.token
+
+    def headers(self, extra: dict | None = None):
+        h = {
+            "Authorization": f"Bearer {self.token_value()}",
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        if extra:
+            h.update(extra)
+        return h
+
+    def request(self, method: str, url: str, **kwargs):
+        method = method.upper()
+        headers = kwargs.pop("headers", {})
+        headers = self.headers(headers)
+
+        try:
+            resp = self.session.request(
+                method=method,
+                url=url,
+                headers=headers,
+                timeout=60,
+                **kwargs
+            )
+            if resp.status_code in (401, 403):
+                self._signin()
+                headers = self.headers(headers)
+                resp = self.session.request(
+                    method=method,
+                    url=url,
+                    headers=headers,
+                    timeout=60,
+                    **kwargs
+                )
+            resp.raise_for_status()
+            return resp
+        except requests.exceptions.ReadTimeout:
+            console.print(f"[red]Le serveur ne répond pas : timeout sur {url}[/red]")
+            return None
+        except requests.RequestException as e:
+            console.print(f"[red]Erreur requête API : {e}[/red]")
+            return None
+
+SIGNIN_URL = f"{API_URL}/signin"
+manager = TokenManager(username="adou.kouadio", password="0564777191", signin_url=SIGNIN_URL)
+
+# --------------------------- API UTILITIES ---------------------------
+
+def api_get(endpoint: str, params: dict | None = None):
+    url = f"{API_URL}{endpoint}"
+    return manager.request("GET", url, params=params)
+
+def api_post(endpoint: str, payload: dict):
+    url = f"{API_URL}{endpoint}"
+    return manager.request("POST", url, json=payload)
+
+
+
+# PIPELINE WORKFLOW
+# ---------------------------
+
+MOTIFS = [
+    {"id": "106", "designation": "Injoignable", "description": "Le contact du client ne passe pas."},
+    {"id": "108", "designation": "Immeuble Non fibré", "description": "Immeuble dans la zone mais non fibré"},
+    {"id": "111", "designation": "Pas de PB à proximité", "description": "Aucun point de branchement proche"},
+    {"id": "107", "designation": "Indisponible", "description": "Client indisponible à la date"},
+    {"id": "109", "designation": "Zone non fibrée", "description": "Zone sans fibre"},
+    {"id": "110", "designation": "Poteaux à implanter", "description": "Besoin d'implanter un poteau"},
+    {"id": "112", "designation": "Pas de signal au PB", "description": "Puissance absente ou élevée"},
+    {"id": "113", "designation": "Autres problèmes clients", "description": "Box perdue, changement de zone, autres"},
+    {"id": "115", "designation": "Configuration en cours", "description": "Configuration non terminée"},
+    {"id": "6812", "designation": "OK", "description": "RAS"},
+]
+
+
+def choisir_motif() -> int:
+    table = Table(show_header=True, header_style="bold cyan", expand=True)
+    table.add_column("Choix", justify="center", style="bold green", width=6)
+    table.add_column("Motif", style="bold white")
+    table.add_column("Description", style="dim")
+
+    choix_map = {}
+
+    for idx, motif in enumerate(MOTIFS, start=1):
+        choix = str(idx)
+        choix_map[choix] = motif["id"]
+        table.add_row(
+            choix,
+            motif["designation"],
+            motif["description"]
+        )
+
+    panel = Panel(
+        table,
+        title="📋 MOTIFS DE SURVEY",
+        border_style="cyan"
+    )
+
+    console.print(panel)
+
+    selected = Prompt.ask(
+        "[bold yellow]👉 Sélectionne un motif[/bold yellow]",
+        choices=list(choix_map.keys())
+    )
+
+    return choix_map[selected]
+
+
+# ===============================
+# Exemple d’intégration Survey
+# ===============================
+
+def realiser_survey(numeroTicket: str):
+    type_commentaire_id = choisir_motif()
+    commentaire = Prompt.ask(
+        "[bold cyan]Commentaire (optionnel)[/bold cyan]",
+        default=""
+    )
+
+    payload = {
+        "resultat": "OK",
+        "typeCommentaire": str(type_commentaire_id),
+        "commentaire": commentaire,
+        "status": "REALISER",
+        "numeroTicket": numeroTicket
+    }
+
+    return commentaire,str(type_commentaire_id),api_post("/commerciale/survey/modifier/", payload)
+
+def rechercher_dates_dispo(numeroTicket: str):
+    return api_get("/commerciale/planning/rechercher-dates-dispo", {"numeroTicket": numeroTicket})
+
+def rechercher_creneaux_dispo(numeroTicket: str, date: str):
+    data = api_get("/commerciale/creneau/recherchercreneauxdispo", {"numeroTicket": numeroTicket, "date": date})
+    if data and isinstance(data.json(), list):
+        return [c["creneau"]["id"] for c in data.json()]
+    return []
+
+def enregistrer_rdv(numeroTicket: str, dateRdv: str, creneauId: str):
+    payload = {
+        "numeroTicket": numeroTicket,
+        "creneauId": creneauId,
+        "typeRdv": "RACCORDEMENT",
+        "dateRdv": dateRdv
+    }
+    return api_post("/commerciale/rendezvous/enregistrer", payload)
+
+def effectuer_raccordement(numeroTicket: str, dateDebut: str, dateFin: str,id,comment):
+    payload = {
+        "commentaire": comment,
+        "dateHDebut": dateDebut,
+        "dateHFin": dateFin,
+        "numeroTicket": numeroTicket,
+        "resultat": "OK",
+        "status": "REALISER",
+        "typeCommentaire": id
+    }
+
+   # return api_post("/commerciale/raccordement/modifier/", payload)
+    return requests.post(API_URL +"/commerciale/raccordement/modifier/",headers=manager.headers(),json=payload)
+
+def activer_abonnement(numeroTicket: str):
+    payload = {
+        "resultat": "OK",
+        "typeCommentaire": "6812",
+        "commentaire": "",
+        "status": "REALISER",
+        "numeroTicket": numeroTicket
+    }
+    return api_post( "/commerciale/activation/enregistrer/", payload)
+
+def visualiser_mdp(numeroTicket: str):
+    return api_get("/commerciale/abonnement/visualiser-mdp-activation", {"numeroTicket": numeroTicket})
+
+def souscrire_(numeroSouscription: str, numeroTicket: str):
+    endpoint = f"/commericiale/souscription/souscrire/100"
+    payload = {
+        "numeroSouscription": numeroSouscription,
+        "numeroTicket": numeroTicket
+    }
+    return api_post(endpoint, payload)
+
+
+def souscrire(numero_souscription, numero_ticket):
+    params = {
+        "numeroSouscription": numero_souscription,
+        "numeroTicket": numero_ticket,
+    }
+
+    url = f"{API_URL}{ENDPOINTS["souscription_forfait"]}"
+
+    spinner = Spinner("dots", text="Envoi de la requête...", style="cyan")
+
+    with Live(spinner, console=console, refresh_per_second=5):
+        response = requests.post(
+            url,
+            params=params,
+            headers=manager.headers(),
+            timeout=5,
+        )
+
+    try:
+        data = response.json()
+    except Exception:
+        data = response.text
+
+    return response.status_code, data
+
+
+# ---------------------------
+# AFFICHAGE RICH SIMPLE
+# ---------------------------
+def afficher_resultat(titre: str, data: dict):
+    table = Table(show_header=True, header_style="bold cyan")
+    table.add_column("Champ", style="cyan")
+    table.add_column("Valeur", style="white")
+    for k, v in data.items():
+        table.add_row(str(k), str(v))
+    console.print(Panel(table, title=f"[bold green]{titre}"))
+
+
+from datetime import datetime, timedelta
+from datetime import datetime, timedelta
+
+def generer_dates_raccordement():
+    """
+    Retourne un dictionnaire avec :
+    - dateHDebut : maintenant
+    - dateHFin   : demain à la même heure
+    - millisecondes incluses
+    """
+    now = datetime.now()
+    debut = now
+    fin = now + timedelta(days=1)
+
+    # Formater avec millisecondes
+    dateHDebut = debut.strftime("%Y-%m-%dT%H:%M:%S.") + f"{int(debut.microsecond/1000):03d}"
+    dateHFin = fin.strftime("%Y-%m-%dT%H:%M:%S.") + f"{int(fin.microsecond/1000):03d}"
+
+    return {
+        "dateHDebut": dateHDebut,
+        "dateHFin": dateHFin
+    }
+
+
+
+# ---------------------------
+# PIPELINE CLIENT
+# ---------------------------
+def pipeline_client(client,rdv:str,stat:str,numeroTicket: str, numeroSouscription: str = None):
+    console.print(f"[bold green]--- DÉBUT PIPELINE CLIENT {numeroTicket} ---[/bold green]")
+    
+    if stat != "EN_ATTENTE_DE_RENDEZ_VOUS_DE_RACCORDEMENT":
+
+        # 1. Survey
+        comment,comment_id,survey = realiser_survey(numeroTicket)
+        afficher_resultat("Survey réalisé", survey.json())
+
+        # 2. Dates dispo pour RDV
+        dates_resp = rechercher_dates_dispo(numeroTicket)
+        dates_list = dates_resp.json()
+        # Tirage pondéré : les 3 premières dates favorisées
+        weights = [10, 8, 6] + [1]*(len(dates_list)-3)
+        date_rdv = random.choices(dates_list, weights=weights[:len(dates_list)], k=1)[0]
+
+        date_obj = datetime.strptime(date_rdv, "%Y-%m-%d")
+        date_formatee = date_obj.strftime("%d-%m-%Y")
+        console.print(f"Date choisie pour RDV : {date_formatee}")
+        rdv = date_formatee
+    if stat == "EN_ATTENTE_DE_RENDEZ_VOUS_DE_RACCORDEMENT":
+        date_obj = datetime.strptime(rdv, "%Y-%m-%d")
+        date_formatee = date_obj.strftime("%d-%m-%Y")
+        rdv = date_formatee
+
+    # 3. Creneaux dispo
+    creneaux = rechercher_creneaux_dispo(numeroTicket,rdv)
+    if not creneaux:
+        console.print("[red]Aucun créneau disponible[/red]")
+        return
+    weights = [10, 8, 6, 1, 1, 1]
+    creneau_id = random.choice(creneaux)
+    console.print(f"Créneau choisi : {creneau_id}")
+
+    # 4. Enregistrer RDV
+    rdv = enregistrer_rdv(numeroTicket, rdv, str(creneau_id))
+    afficher_resultat("Rendez-vous enregistré", rdv.json())
+
+    # 5. Effectuer raccordement
+    now = datetime.now()
+    debut = now.isoformat()
+    fin = (now + timedelta(hours=1)).isoformat()
+    if stat == "EN_ATTENTE_DE_RENDEZ_VOUS_DE_RACCORDEMENT":
+        comment = "ras"
+    raccordement = effectuer_raccordement(numeroTicket,  generer_dates_raccordement()["dateHDebut"],  generer_dates_raccordement()["dateHFin"],comment_id,comment)
+    print(raccordement.json())
+    afficher_resultat("Raccordement réalisé", raccordement.json())
+
+    # 6. Activation
+    activation = activer_abonnement(numeroTicket)
+    afficher_resultat("Activation réalisée", activation.json())
+
+    # 7. Visualiser MDP
+    mdp = visualiser_mdp(numeroTicket)
+    afficher_resultat("MDP Activation", mdp.json())
+
+    # 8. Souscription si fourni
+    ask = Prompt.ask("Voulez vous souscrire? oui ou non ")
+    if ask =='oui'.lower():
+
+                try:
+                    subprocess.run(
+                [
+                        "python",
+                        "/data/data/com.termux/files/home/bin/sous",
+                        client.abonnement.get("numeroFtth").strip("@mtn.ci"),
+                        client.abonnement.get("numeroTicket"),
+            
+                  ],
+                        check=True
+                     )
+                except subprocess.CalledProcessError as e:
+                    print("Erreur lors de l'exécution de sous.py")
+                    print(e)
+                    time.sleep(10)
+    elif ask =='non'.lower():
+        return 
+    else:
+        print("entree invalide ")
+    console.print(f"[bold green]--- FIN PIPELINE CLIENT {numeroTicket} ---[/bold green]")
+
+
+
+# =======================================
+# DATACLASS CLIENT
+# =======================================
+@dataclass
+class Client:
+    client: Dict[str, Any]
+    abonnement: Dict[str, Any]
+    forfait: Dict[str, Any]
+    equipement_abonnement: Dict[str, Any]
+    equipement_forfait: Dict[str, Any]
+    domicile: Dict[str, Any]
+    eligibilite: Dict[str, Any]
+    pbo: Dict[str, Any]
+    agent: Dict[str, Any]
+    rdv: Dict[str, Any]
+    crenau: Dict[str, Any]
+
+    @classmethod
+    def from_rdv(cls, rdv: Dict[str, Any]) -> "Client":
+        abonnement = rdv.get("abonnement", {})
+        forfait = abonnement.get("forfait", {})
+        eligibilite = abonnement.get("eligibilite", {})
+        return cls(
+            client=abonnement.get("client", {}),
+            abonnement=abonnement,
+            forfait=forfait,
+            equipement_abonnement=abonnement.get("equipement", {}),
+            equipement_forfait=forfait.get("equipement", {}),
+            domicile=abonnement.get("domicile", {}),
+            eligibilite=eligibilite,
+            pbo=eligibilite.get("pbo", {}),
+            agent=abonnement.get("agent", {}),
+            rdv=rdv,
+            crenau=rdv.get("crenau", {}),
+        )
+
+    @property
+    def numero_serie(self) -> Optional[str]:
+        return (
+            self.equipement_abonnement.get("numeroSerie")
+            or self.equipement_forfait.get("numeroSerie")
+            or self.equipement_abonnement.get("serialNumber")
+            or self.equipement_forfait.get("serialNumber")
+        )
+
+    @property
+    def equipement(self) -> Optional[str]:
+        return (
+            self.equipement_forfait.get("designation")
+            or self.equipement_abonnement.get("designation")
+        )
+
+# =======================================
+# HEADERS API
+# =======================================
+def build_headers() -> Dict[str, str]:
+    return {
+        "Authorization": f"Bearer {TokenManager.get_token()}",
+        "Accept": "application/json"
+    }
+
+# =======================================
+# EXTRACTION RENDEZ-VOUS
+# =======================================
+def extraire_tous_rdv(endpoint: str,param: str = "kon", statut: str = "EN_ATTENTE_DE_SURVEY",):
+    all_clients = []
+    page = 0
+    size = 50
+    while True:
+        params = {
+            "page": page,
+            "param": param,
+            "size": size,
+            "dateDebut": "",
+            "dateFin": "",
+            "statutAbonnement": statut,
+            "statutPriseEnCharge": "",
+            "resultat": "",
+            "typeRdv": "SURVEY",
+            "inTime": ""
+        }
+        url = f"{endpoint}"
+
+        resp = api_get(url, params=params,)
+        if not len(resp.json()["data"]):
+            console.print(" aucun resultat dans survey")
+            console.print("recherche dans raccordement")
+            params["statutAbonnement"] = "EN_ATTENTE_DE_RENDEZ_VOUS_DE_RACCORDEMENT"
+            resp = api_get(url, params=params, )
+
+        if resp.status_code != 200:
+            console.print(f"[bold red]Erreur API : {resp.status_code}[/bold red]")
+
+            break
+        data = resp.json()
+        rdv_page = data.get("data", [])
+        if not rdv_page:
+            break
+            exit()
+        for rdv in rdv_page:
+            client_obj = Client.from_rdv(rdv)
+            all_clients.append(client_obj)
+        if data.get("isLast", True):
+            break
+        page += 1
+    return all_clients
+
+# =======================================
+# AFFICHAGE RICH
+# =======================================
+def afficher_client(client: Client):
+    def afficher_section(titre: str, donnees: Dict[str, Any]):
+        table = Table(show_header=False, box=None)
+        table.add_column(style="cyan", no_wrap=True)
+        table.add_column(style="white")
+        for label, value in donnees.items():
+            table.add_row(label, str(value) if value not in (None, "") else "-")
+        console.print(Panel(table, title=f"[bold cyan]{titre}", border_style="cyan"))
+
+    afficher_section(
+        "📄 INFORMATIONS CLIENT",
+        {
+            "Nom client": client.client.get("nomPrenoms"),
+            "Numéro principal": client.client.get("numero"),
+            "Second numéro": client.client.get("secondNumero"),
+            "Type client": client.client.get("typeClient"),
+        },
+    )
+
+    afficher_section(
+        "📦 ABONNEMENT",
+        {
+            "Numéro ticket": client.abonnement.get("numeroTicket"),
+            "Numéro FTTH": client.abonnement.get("numeroFtth"),
+            "Statut RDV": client.rdv.get("status"),
+            "Statut abonnement": client.abonnement.get("status"),
+            "Confirmation": client.abonnement.get("statusConfirmation"),
+            "FTTH éligible": client.abonnement.get("ftthEligible"),
+            "Service Partner": client.abonnement.get("servicePartner", {}).get("designation"),
+            "Superviseur": client.abonnement.get("nomSuperviseur"),
+            "Contact Superviseur": client.abonnement.get("contactSuperviseur"),
+        },
+    )
+
+    afficher_section(
+        "📡 FORFAIT & ÉQUIPEMENT",
+        {
+            "Offre": client.forfait.get("designation"),
+            "Catégorie": client.forfait.get("categorie"),
+            "Code souscription": client.forfait.get("codeSouscription"),
+            "Équipement": client.equipement,
+            "Numéro de série": client.numero_serie,
+        },
+    )
+
+    afficher_section(
+        "📍 LOCALISATION",
+        {
+            "Commune": client.domicile.get("commune"),
+            "Quartier": client.domicile.get("quartier"),
+            "Adresse": client.domicile.get("adresse"),
+        },
+    )
+
+    afficher_section(
+        "🧭 ÉLIGIBILITÉ",
+        {
+            "Statut": client.eligibilite.get("status"),
+            "Distance PBO": client.eligibilite.get("distancePbo"),
+            "PBO": client.pbo.get("nom"),
+            "Raison": client.eligibilite.get("raison"),
+            "OTP": client.eligibilite.get("otp"),
+        },
+    )
+
+    afficher_section(
+        "👷 AGENT COMMERCIAL",
+        {
+            "Nom": client.agent.get("nomPrenoms"),
+            "Téléphone": client.agent.get("numero"),
+            "Profil": client.agent.get("profile"),
+        },
+    )
+
+    afficher_section(
+        "📅 RENDEZ-VOUS",
+        {
+            "Date RDV": client.rdv.get("dateRdv"),
+            "Créé le": client.rdv.get("dateCreation"),
+            "Créneau": f"{client.crenau.get('heureDebut')} - {client.crenau.get('heureFin')}",
+            "Résultat": client.rdv.get("resultat"),
+        },
+    )
+
+# =======================================
+# SCRIPT PRINCIPAL
+# =======================================
+
+
+def prompt_actions_ftth():
+    title = Text("📡  MTN FTTH – MENU PRINCIPAL", style="bold cyan")
+    subtitle = Text("Sélectionne une action à effectuer sur le dossier client", style="dim")
+
+    table = Table(show_header=True, header_style="bold magenta", box=None, expand=True)
+    table.add_column("Choix", justify="center", style="bold green", width=6)
+    table.add_column("Action", style="bold white")
+    table.add_column("Description", style="dim")
+
+    table.add_row("1", "📂 Étudier dossier", "installation, statut,activation et souscription, informations client")
+    table.add_row("2", "🔐 Activation MDP", "Voir mdp d'activation")
+    table.add_row("3", "📦 Souscrire au forfait", "Choisir et activer un forfait FTTH")
+    table.add_row("0", "❌ Quitter", "Fermer l’application")
+
+    panel = Panel(
+        Align.center(table),
+        title=title,
+        subtitle=subtitle,
+        border_style="cyan",
+        padding=(1, 2)
+    )
+
+    console.clear()
+    console.print(panel)
+
+    choix = Prompt.ask(
+        "[bold yellow]👉 Ton choix[/bold yellow]",
+        choices=["1", "2", "3", "0"],
+        default="1"
+    )
+
+    return choix
+
+
+# ===============================
+# Exemple d’utilisation
+# ===============================
+
+
+def recherche_client(where,client) -> "Client":
+
+    clients = extraire_tous_rdv(param=client,endpoint=where)
+    if not clients:
+        console.print("[bold red]Aucun rendez-vous trouvé[/bold red]")
+        return
+
+    # Affichage des résultats synthétiques
+    console.print(f"\n[bold cyan]Résultats trouvés : {len(clients)}[/bold cyan]\n")
+    for idx, client in enumerate(clients, 1):
+        console.print(f"[{idx}] {client.client.get('nomPrenoms')} - Ticket: {client.abonnement.get('numeroTicket')}")
+
+    # Sélection interactive
+    choix = console.input("\n[bold yellow]Entrez le numéro du client à afficher en détail : [/bold yellow]")
+    try:
+        choix_idx = int(choix) - 1
+        if 0 <= choix_idx < len(clients):
+            afficher_client(clients[choix_idx])
+            client = clients[choix_idx]
+        else:
+            console.print("[bold red]Numéro invalide[/bold red]")
+    except ValueError:
+        console.print("[bold red]Entrée non valide[/bold red]")
+    return client
+
+def main():
+    while True:
+        choice = prompt_actions_ftth()
+        search = Prompt.ask("[bold green]🔎 Entrez un paramètre de recherche (nom, numéro, ticket...) : [/bold green]")
+        if choice == "1":
+            client = recherche_client(ENDPOINTS["etudier_dossier"],search)
+            if not client:
+                console.print("[blod red italic]aucun client trouvé")
+                exit()
+
+            if Confirm.ask("Voulez-vous exécuter le workflow pour ce client ?"):
+                pipeline_client(
+                    client=client,
+                    stat=client.abonnement.get("status"),
+                    rdv=client.rdv.get("dateRdv"),
+                    numeroTicket=client.abonnement.get("numeroTicket"),
+                    numeroSouscription=client.abonnement.get("numeroSouscription")
+                )
+            else:
+                print("Workflow non exécuté.")
+
+        elif choice == "2":
+            client = recherche_client(ENDPOINTS["activation_mdp"], search)
+
+            res = visualiser_mdp(client.abonnement.get("numeroTicket"))
+            afficher_resultat("activation",res)
+
+        elif choice == "3":
+            client = recherche_client(ENDPOINTS["souscription_forfait"], search)
+        
+            ask = Prompt.ask("Voulez-vous souscrire? ")
+            if ask =='oui'.lower():
+
+
+                try:
+                    subprocess.run(
+                [
+                        "python",
+                        "/data/data/com.termux/files/home/bin/sous",
+                        client.abonnement.get("numeroFtth").strip("@mtn.ci"),
+                        client.abonnement.get("numeroTicket"),
+            
+                  ],
+                        check=True
+                     )
+                except subprocess.CalledProcessError as e:
+                    print("Erreur lors de l'exécution de sous.py")
+                    print(e)
+            elif ask =='non'.lower():
+                return 
+            else:
+                print("entree invalide ")
+            time.sleep(10)
+
+        elif choice == "0":
+
+            console.print("\n[bold red]❌ Fermeture de l’application[/bold red]")
+            sys.exit("bye Technicien ")
+
+        else:
+            Console.print("[bold red] entree invalide[/bold red]")
+
+
+# ---------------------------
+# EXEMPLE D'UTILISATION
+# ---------------------------
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,361 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import re
+import os
+import sys
+import argparse
+import pandas as pd
+from datetime import datetime
+from openpyxl import load_workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from tkinter.scrolledtext import ScrolledText
+import threading
+
+
+# =====================================================================
+# Vérification automatique des dépendances
+# =====================================================================
+try:
+    import pandas, openpyxl, reportlab
+except ImportError as e:
+    print("❌ Module manquant:", e.name)
+    print("Installe-le avec : pip install pandas openpyxl reportlab")
+    sys.exit(1)
+
+
+# =====================================================================
+# Gestion de la configuration (logo, dossier de sortie)
+# =====================================================================
+class ConfigManager:
+    """Gère la configuration (logo et dossier de sortie sauvegardés localement)."""
+    CONFIG_FILE = "config.ini"
+
+    @staticmethod
+    def save_config(logo_path=None, output_dir=None):
+        import configparser
+        config = configparser.ConfigParser()
+        if os.path.exists(ConfigManager.CONFIG_FILE):
+            config.read(ConfigManager.CONFIG_FILE)
+
+        if "DEFAULT" not in config:
+            config["DEFAULT"] = {}
+
+        if logo_path:
+            config["DEFAULT"]["logo_path"] = logo_path
+        if output_dir:
+            config["DEFAULT"]["output_dir"] = output_dir
+
+        with open(ConfigManager.CONFIG_FILE, "w") as f:
+            config.write(f)
+
+    @staticmethod
+    def get_logo_path():
+        import configparser
+        config = configparser.ConfigParser()
+        if os.path.exists(ConfigManager.CONFIG_FILE):
+            config.read(ConfigManager.CONFIG_FILE)
+            return config["DEFAULT"].get("logo_path", None)
+        return None
+
+    @staticmethod
+    def get_output_dir():
+        import configparser
+        config = configparser.ConfigParser()
+        if os.path.exists(ConfigManager.CONFIG_FILE):
+            config.read(ConfigManager.CONFIG_FILE)
+            return config["DEFAULT"].get("output_dir", os.getcwd())
+        return os.getcwd()
+
+
+# =====================================================================
+# Classe principale de gestion des rapports FTTH
+# =====================================================================
+class FiberInstallationReportManager:
+    """Gestionnaire de rapports d'installation fibre optique"""
+
+    def __init__(self, logo_path=None):
+        self.logo_path = logo_path
+        self.prestataires = {
+            'Ademsi': 'WINAT',
+            'Sea STI': 'STI',
+            'MOHAMED MAIGA': 'ITC'
+        }
+
+    def parse_whatsapp_file(self, file_path):
+        """Analyse un fichier WhatsApp pour extraire les données d'installation"""
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        messages = re.split(r'\[\d{2}/\d{2}\s+\d{2}:\d{2}\]', content)
+        dates = re.findall(r'\[(\d{2}/\d{2}\s+\d{2}:\d{2})\]', content)
+
+        installations = []
+
+        for i, message in enumerate(messages[1:], 0):
+            if i >= len(dates):
+                break
+            date_str = dates[i]
+
+            prestataire = None
+            for key in self.prestataires.keys():
+                if key in message:
+                    prestataire = self.prestataires[key]
+                    break
+            if not prestataire:
+                continue
+
+            data = {
+                'Date': self._parse_date(date_str),
+                'Prestataire': prestataire,
+                'Nom_Client': self._extract_field(message, r'(?:Nom du client|CLIENT)\s*:\s*([^\n]+)'),
+                'Numero': self._extract_field(message, r'NUMÉRO\s*:\s*(\d+)'),
+                'TN': self._extract_field(message, r'TN\s*:\s*\*?([^@\n*]+)'),
+                'Localisation': self._extract_field(message, r'LOCALISATION\s*:\s*([^\n]+)'),
+                'Forfait': self._extract_field(message, r'FORFAITS?\s*:\s*([^\n]+)'),
+                'Port': self._extract_field(message, r'(?:NUMÉRO DU )?PORT\s*:?\s*(\d+)'),
+                'Configuration': self._extract_status(message, r'[Cc]onfi[Gg]uration\s*:?\s*(ok|nok|OK|NOK)'),
+                'Activation_Forfait': self._extract_status(message, r'activation forfait\s*:?\s*(ok|nok|OK|NOK)'),
+                'Connexion': self._extract_status(message, r'CONNEXION\s*:?\s*(ok|nok|OK|NOK)'),
+                'Cable_Metrage': self._extract_field(message, r'(?:CÂBLE|Métré de CÂBLE)\s*:\s*(\d+\s*[Mm])'),
+            }
+            installations.append(data)
+
+        return pd.DataFrame(installations)
+
+    def _parse_date(self, date_str):
+        try:
+            dt = datetime.strptime(date_str, '%d/%m %H:%M')
+            dt = dt.replace(year=datetime.now().year)
+            return dt.isoformat()
+        except:
+            return date_str
+
+    def _extract_field(self, text, pattern):
+        match = re.search(pattern, text, re.IGNORECASE)
+        return match.group(1).strip() if match else ''
+
+    def _extract_status(self, text, pattern):
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            status = match.group(1).upper()
+            return '✓' if status == 'OK' else '✗'
+        return ''
+
+    def create_excel(self, df, output_path='rapport_installations.xlsx'):
+        with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Synthèse', index=False)
+            for prestataire in df['Prestataire'].unique():
+                df[df['Prestataire'] == prestataire].to_excel(writer, sheet_name=prestataire, index=False)
+
+            stats = self._create_statistics(df)
+            stats.to_excel(writer, sheet_name='Statistiques', index=True)
+        self._format_excel(output_path)
+        return output_path
+
+    def _create_statistics(self, df):
+        stats = pd.DataFrame({
+            'Total_Installations': df.groupby('Prestataire').size(),
+            'Connexions_OK': df[df['Connexion'] == '✓'].groupby('Prestataire').size(),
+            'Connexions_NOK': df[df['Connexion'] == '✗'].groupby('Prestataire').size(),
+        }).fillna(0).astype(int)
+        return stats
+
+    def _format_excel(self, file_path):
+        wb = load_workbook(file_path)
+        header_fill = PatternFill(start_color='366092', end_color='366092', fill_type='solid')
+        header_font = Font(bold=True, color='FFFFFF', size=11)
+        border = Border(left=Side(style='thin'), right=Side(style='thin'),
+                        top=Side(style='thin'), bottom=Side(style='thin'))
+
+        for sheet_name in wb.sheetnames:
+            ws = wb[sheet_name]
+            for cell in ws[1]:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+                cell.border = border
+
+            for column in ws.columns:
+                max_length = max((len(str(cell.value)) for cell in column if cell.value), default=0)
+                ws.column_dimensions[column[0].column_letter].width = min(max_length + 2, 50)
+            ws.freeze_panes = 'A2'
+
+        wb.save(file_path)
+
+    def create_pdf_report(self, df, output_path='rapport_quotidien.pdf'):
+        doc = SimpleDocTemplate(output_path, pagesize=A4,
+                                leftMargin=0.5*inch, rightMargin=0.5*inch,
+                                topMargin=0.5*inch, bottomMargin=0.5*inch)
+
+        elements = []
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18,
+                                     textColor=colors.HexColor('#366092'), alignment=1, spaceAfter=20)
+
+        df['Date_Only'] = pd.to_datetime(df['Date']).dt.date
+
+        for date in sorted(df['Date_Only'].unique()):
+            if self.logo_path and os.path.exists(self.logo_path):
+                img = Image(self.logo_path, width=2*inch, height=1*inch)
+                img.hAlign = 'CENTER'
+                elements.append(img)
+                elements.append(Spacer(1, 20))
+
+            elements.append(Paragraph(f"Rapport d'Installation - {date.strftime('%d/%m/%Y')}", title_style))
+            elements.append(Spacer(1, 20))
+
+            df_day = df[df['Date_Only'] == date]
+            table_data = [['Client', 'Numéro', 'Prestataire', 'Config', 'Activation', 'Connexion', 'Câble']]
+            for _, row in df_day.iterrows():
+                table_data.append([
+                    row['Nom_Client'][:20], row['Numero'], row['Prestataire'],
+                    row['Configuration'], row['Activation_Forfait'], row['Connexion'], row['Cable_Metrage']
+                ])
+
+            table = Table(table_data, colWidths=[1.8*inch, 1*inch, 0.8*inch, 0.6*inch, 0.8*inch, 0.8*inch, 0.8*inch])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ]))
+
+            elements.append(table)
+            elements.append(PageBreak())
+
+        doc.build(elements)
+        return output_path
+
+
+# =====================================================================
+# Interface graphique
+# =====================================================================
+class FiberReportGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("MG Telecom - Gestionnaire FTTH")
+        self.root.geometry("800x600")
+        self.root.configure(bg="#F5F5F5")
+        self.input_file = tk.StringVar()
+        self.logo_file = tk.StringVar()
+        self.output_dir = tk.StringVar(value=os.getcwd())
+        self.create_widgets()
+
+    def create_widgets(self):
+        frame = tk.Frame(self.root, bg="#F5F5F5")
+        frame.pack(padx=20, pady=20)
+
+        tk.Label(frame, text="Fichier WhatsApp (.txt)", bg="#F5F5F5").grid(row=0, column=0, sticky="w")
+        tk.Entry(frame, textvariable=self.input_file, width=50).grid(row=1, column=0)
+        tk.Button(frame, text="Parcourir", command=self.browse_input).grid(row=1, column=1)
+
+        tk.Label(frame, text="Logo (optionnel)", bg="#F5F5F5").grid(row=2, column=0, sticky="w", pady=(10, 0))
+        tk.Entry(frame, textvariable=self.logo_file, width=50).grid(row=3, column=0)
+        tk.Button(frame, text="Parcourir", command=self.browse_logo).grid(row=3, column=1)
+
+        tk.Label(frame, text="Dossier de sortie", bg="#F5F5F5").grid(row=4, column=0, sticky="w", pady=(10, 0))
+        tk.Entry(frame, textvariable=self.output_dir, width=50).grid(row=5, column=0)
+        tk.Button(frame, text="Choisir", command=self.browse_output).grid(row=5, column=1)
+
+        tk.Button(frame, text="🚀 GÉNÉRER LES RAPPORTS", bg="#366092", fg="white",
+                  font=("Arial", 12, "bold"), command=self.generate_reports).grid(row=6, column=0, pady=20)
+
+        self.log_box = ScrolledText(frame, width=90, height=10)
+        self.log_box.grid(row=7, column=0, columnspan=2)
+        self.progress = ttk.Progressbar(frame, mode='indeterminate', length=400)
+        self.progress.grid(row=8, column=0, pady=10)
+
+    def browse_input(self):
+        f = filedialog.askopenfilename(filetypes=[("Fichiers texte", "*.txt")])
+        if f:
+            self.input_file.set(f)
+
+    def browse_logo(self):
+        f = filedialog.askopenfilename(filetypes=[("Images", "*.png;*.jpg;*.jpeg")])
+        if f:
+            self.logo_file.set(f)
+
+    def browse_output(self):
+        d = filedialog.askdirectory()
+        if d:
+            self.output_dir.set(d)
+
+    def log(self, msg):
+        self.log_box.insert(tk.END, msg + "\n")
+        self.log_box.see(tk.END)
+
+    def generate_reports(self):
+        t = threading.Thread(target=self._thread_generate)
+        t.daemon = True
+        t.start()
+
+    def _thread_generate(self):
+        try:
+            self.progress.start()
+            self.log("📖 Lecture du fichier...")
+            manager = FiberInstallationReportManager(self.logo_file.get())
+            df = manager.parse_whatsapp_file(self.input_file.get())
+            if df.empty:
+                messagebox.showwarning("Vide", "Aucune installation détectée")
+                return
+            excel = os.path.join(self.output_dir.get(), "rapport_installations.xlsx")
+            pdf = os.path.join(self.output_dir.get(), "rapport_quotidien.pdf")
+            manager.create_excel(df, excel)
+            manager.create_pdf_report(df, pdf)
+            self.log("✅ Rapports générés avec succès.")
+            messagebox.showinfo("Succès", "Rapports générés avec succès.")
+        except Exception as e:
+            self.log("❌ Erreur: " + str(e))
+            messagebox.showerror("Erreur", str(e))
+        finally:
+            self.progress.stop()
+
+
+# =====================================================================
+# Mode CLI et exécution principale
+# =====================================================================
+def run_cli(input_file, logo_path=None, output_dir=None):
+    print("=" * 60)
+    print("MG TELECOM - GESTIONNAIRE DE RAPPORTS FTTH")
+    print("=" * 60)
+
+    manager = FiberInstallationReportManager(logo_path)
+    df = manager.parse_whatsapp_file(input_file)
+    if df.empty:
+        print("⚠️ Aucune installation trouvée.")
+        return
+
+    excel_path = os.path.join(output_dir or os.getcwd(), "rapport_installations.xlsx")
+    pdf_path = os.path.join(output_dir or os.getcwd(), "rapport_quotidien.pdf")
+    manager.create_excel(df, excel_path)
+    manager.create_pdf_report(df, pdf_path)
+    print(f"✅ Excel: {excel_path}\n✅ PDF: {pdf_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="MG Telecom FTTH Manager")
+    parser.add_argument("-i", "--input", help="Fichier WhatsApp à analyser")
+    parser.add_argument("-l", "--logo", help="Logo optionnel")
+    parser.add_argument("-o", "--output", help="Dossier de sortie")
+    parser.add_argument("--cli", action="store_true", help="Forcer le mode CLI")
+    args = parser.parse_args()
+
+    if args.cli and args.input:
+        run_cli(args.input, args.logo, args.output)
+    else:
+        root = tk.Tk()
+        app = FiberReportGUI(root)
+        root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

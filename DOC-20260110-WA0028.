@@ -1,0 +1,596 @@
+import os
+import re
+import pandas as pd
+from PIL import Image, ImageDraw, ImageFont, ImageColor
+from rich.console import Console
+from rich.prompt import Prompt, Confirm
+from rich.progress import track
+import qrcode
+import urllib.parse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import cm
+from datetime import datetime
+import shutil
+console = Console()
+
+# --- CONFIGURATION DES THÈMES ---
+
+THEMES = {
+ "1": "NOIR & OR",
+ "2": "BLEU NUIT",
+ "3": "CYBERPUNK",
+ "4": "BORDEAUX",
+
+ "5": "VERT EMERAUDE",
+ "6": "GRIS PRO",
+ "7": "ORANGE ENERGIE",
+ "8": "BLEU MTN",
+ "9": "ROUGE PRESTIGE",
+ "10": "VIOLET ROYAL",
+ "11": "SABLE",
+ "12": "CARBONE",
+ "13": "CIAN TECH",
+ "14": "IVOIRE GOLD",
+"15": "BLEU GLACIER",
+"16": "VERT OLIVE",
+"17": "ROSE GOLD",
+"18": "BLEU PÉTROLE",
+"19": "VERT MILITAIRE",
+"20": "JAUNE SAHARA",
+"21": "BLEU LAGON",
+"22": "GRIS ANTHRACITE",
+"23": "TURQUOISE SOFT",
+"24": "BRUN CAFÉ",
+"25": "BLEU ACIER",
+"26": "MENTHE FRAÎCHE",
+"27": "BLEU NÉON",
+"28": "NOIR MAT",
+"29": "VERT LIME TECH",
+"30": "BLEU CIEL PRO",
+"31": "ROUGE NOIR",
+"32": "OR IMPÉRIAL",
+"33": "BLEU COBALT",
+"34": "GRAPHITE",
+"35": "BLEU INDIGO",
+"36": "VERT FOREST",
+"37": "ORANGE OFFICIEL",
+"38": "MTN OFFICIEL",
+"39": "MOOV OFFICIEL"
+}
+
+
+def export_pdf(date_rdv):
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.units import cm
+
+    output_dir = "EXPORT_MGT"
+    os.makedirs(output_dir, exist_ok=True)
+
+    pdf_path = f"{output_dir}/Fiches_installation_{date_rdv}.pdf"
+    c = canvas.Canvas(pdf_path, pagesize=A4)
+    W, H = A4
+
+    images = sorted([
+        os.path.join(output_dir, f)
+        for f in os.listdir(output_dir)
+        if f.lower().endswith(".png")
+    ])
+
+    # Dimensions cartes
+    card_width = W - 4 * cm
+    card_height = (H - 8 * cm) / 2
+
+    for i in range(0, len(images), 2):
+        # Logo
+        if os.path.exists("logo.png"):
+            c.drawImage("logo.png", 2*cm, H-3*cm, width=3*cm, height=3*cm, mask='auto')
+
+        # Titre
+        c.setFont("Helvetica-Bold", 18)
+        c.drawCentredString(W / 2, H - 2.2*cm, f"FICHES D’INSTALLATION DU {date_rdv}")
+
+        # Carte du haut
+        c.drawImage(
+            images[i],
+            2*cm,
+            H/2 + 0.5*cm,
+            width=card_width,
+            height=card_height,
+            preserveAspectRatio=True,
+            mask='auto'
+        )
+
+        # Carte du bas (si existe)
+        if i + 1 < len(images):
+            c.drawImage(
+                images[i + 1],
+                2*cm,
+                2*cm,
+                width=card_width,
+                height=card_height,
+                preserveAspectRatio=True,
+                mask='auto'
+            )
+
+        c.showPage()
+
+    c.save()
+
+def clean_val(val, placeholder=""):
+    v = str(val).strip()
+    if v.lower() in ['nan', 'none', 'null', '', 'nat']: return placeholder
+    if v.endswith('.0'): v = v[:-2]
+    return v
+
+
+def format_tel(val):
+    v = clean_val(val)
+    if not v: return ""
+    v = re.sub(r'\D', '', v)
+    return "0" + v if len(v) == 9 else v
+
+
+def get_termux_font(bold=True):
+    """Localise les polices DejaVu installées sur Termux"""
+    prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+    font_name = "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"
+    path = os.path.join(prefix, "share/fonts/TTF", font_name)
+    return path if os.path.exists(path) else none
+
+def generate_qr_https(url, filename):
+    qr = qrcode.QRCode(
+        version=3,
+        error_correction=qrcode.constants.ERROR_CORRECT_Q,
+        box_size=10,
+        border=2
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save(f"EXPORT_MGT/{filename}_QR.png")
+
+def generate_client_page(row, team, filename):
+    os.makedirs("EXPORT_MGT/site", exist_ok=True)
+    quart_col = [col for col in row.index if "Quartier" in col]
+    quartier = clean_val(row.get(quart_col[0], "")) if quart_col else ""
+
+    html = f"""<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche Client FTTH</title>
+<style>
+body {{
+    margin:0;
+    font-family: system-ui, Arial;
+    background:#0f172a;
+    color:#e5e7eb;
+}}
+.card {{
+    max-width:600px;
+    margin:30px auto;
+    background:#020617;
+    border-radius:18px;
+    padding:24px;
+    box-shadow:0 20px 40px rgba(0,0,0,.5);
+}}
+h1 {{
+    text-align:center;
+    color:#38bdf8;
+}}
+.label {{
+    font-size:13px;
+    color:#94a3b8;
+    margin-top:18px;
+}}
+.value {{
+    font-size:18px;
+}}
+.badge {{
+    display:inline-block;
+    background:#22c55e;
+    color:black;
+    padding:6px 14px;
+    border-radius:20px;
+    margin-top:6px;
+}}
+.footer {{
+    text-align:center;
+    font-size:12px;
+    color:#64748b;
+    margin-top:30px;
+}}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>📡 FICHE CLIENT FTTH</h1>
+
+<div class="label">Nom du client</div>
+<div class="value">{clean_val(row.get("Nom et Prénoms du Client"))}</div>
+
+<div class="label">Contacts</div>
+<div class="value">
+{format_tel(row.get("Contact du Client"))} / {format_tel(row.get("Second contact du Client"))}
+</div>
+
+<div class="label">Localisation</div>
+<div class="value">
+{clean_val(row.get("Ville/Commune d'habitation du Client"))} – {quartier}
+
+</div>
+
+<div class="label">Offre</div>
+<div class="badge">{clean_val(row.get("Forfaits FTTH"))}</div>
+
+<div class="label">Numéro Ticket</div>
+<div class="value">{clean_val(row.get("Numéro Ticket"))}</div>
+
+<div class="label">Numéro TN</div>
+<div class="value">{clean_val(row.get("Numéro FTTH (TN)"))}</div>
+
+<div class="label">Équipe technique</div>
+<div class="value">{team}</div>
+
+<div class="label">Date transmission</div>
+<div class="value">{clean_val(row.get("Date de Transmission"))}</div>
+
+<div class="footer">
+MG TELECOM • Accès sécurisé via QR Code
+</div>
+</div>
+</body>
+</html>"""
+
+# Chemin du fichier
+    
+    path = f"EXPORT_MGT/site/client_{filename}.html"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    return path
+
+def create_card(row, team, theme_name):
+    W, H = 1200, 1250  # Hauteur ajustée pour inclure Provenance + Ticket
+    colors = {
+        "NOIR & OR": {"bg": "#050505", "head": "#111", "accent": "#D4AF37", "text": "white", "lab": "#666",
+                      "tn_text": "black"},
+        "BLEU NUIT": {"bg": "#0A192F", "head": "#112240", "accent": "#64FFDA", "text": "white", "lab": "#8892B0",
+                      "tn_text": "black"},
+        "CYBERPUNK": {"bg": "#000", "head": "#111", "accent": "#FF00E0", "text": "#33FF00", "lab": "#FF00E0",
+                      "tn_text": "white"},
+        "BORDEAUX": {"bg": "#2D0303", "head": "#4A0000", "accent": "#D4AF37", "text": "white", "lab": "#A52A2A",
+                     "tn_text": "black"},
+
+"VERT EMERAUDE": {"bg": "#012D1F", "head": "#014F3A", "accent": "#2ECC71", "text": "white", "lab": "#A9DFBF", "tn_text": "black"},
+"GRIS PRO": {"bg": "#F2F2F2", "head": "#D9D9D9", "accent": "#333", "text": "black", "lab": "#555", "tn_text": "white"},
+"ORANGE ENERGIE": {"bg": "#2B1300", "head": "#4A1F00", "accent": "#FF7A00", "text": "white", "lab": "#FFB266", "tn_text": "black"},
+"BLEU MTN": {"bg": "#002147", "head": "#003366", "accent": "#FFD100", "text": "white", "lab": "#BFD7FF", "tn_text": "black"},
+"ROUGE PRESTIGE": {"bg": "#330000", "head": "#660000", "accent": "#E50914", "text": "white", "lab": "#FF9999", "tn_text": "white"},
+"VIOLET ROYAL": {"bg": "#1E0033", "head": "#2D004D", "accent": "#9B59B6", "text": "white", "lab": "#D2B4DE", "tn_text": "white"},
+"SABLE": {"bg": "#F5E6C8", "head": "#E6D3A3", "accent": "#A67C52", "text": "black", "lab": "#7D6608", "tn_text": "white"},
+"CARBONE": {"bg": "#121212", "head": "#1F1F1F", "accent": "#B0BEC5", "text": "white", "lab": "#757575", "tn_text": "black"},
+"CIAN TECH": {"bg": "#001F26", "head": "#00303A", "accent": "#00E5FF", "text": "white", "lab": "#80DEEA", "tn_text": "black"},
+"IVOIRE GOLD": {"bg": "#FFFFF0", "head": "#F5F5DC", "accent": "#C9A227", "text": "black", "lab": "#7E6C1E", "tn_text": "black"},"BLEU GLACIER": {
+    "bg": "#E6F2FF", "head": "#CFE2F3", "accent": "#1F77B4",
+    "text": "black", "lab": "#4F6D7A", "tn_text": "black"
+},
+
+"VERT OLIVE": {
+    "bg": "#1F2D1C", "head": "#2E4028", "accent": "#A3BE8C",
+    "text": "white", "lab": "#C1D7AE", "tn_text": "black"
+},
+
+"ROSE GOLD": {
+    "bg": "#2B1B1F", "head": "#40252B", "accent": "#E6B7B2",
+    "text": "white", "lab": "#F5C6C6", "tn_text": "black"
+},
+
+"BLEU PÉTROLE": {
+    "bg": "#001F2D", "head": "#003B4F", "accent": "#00B4D8",
+    "text": "white", "lab": "#90E0EF", "tn_text": "black"
+},
+
+"VERT MILITAIRE": {
+    "bg": "#1C1F1A", "head": "#2A2E25", "accent": "#7A8450",
+    "text": "white", "lab": "#B5BD89", "tn_text": "black"
+},
+
+"JAUNE SAHARA": {
+    "bg": "#FFF3C4", "head": "#F7E6A3", "accent": "#C9A227",
+    "text": "black", "lab": "#8C7A2B", "tn_text": "black"
+},
+
+"BLEU LAGON": {
+    "bg": "#012A36", "head": "#014A5F", "accent": "#00E5FF",
+    "text": "white", "lab": "#80DEEA", "tn_text": "black"
+},
+
+"GRIS ANTHRACITE": {
+    "bg": "#101214", "head": "#1E2226", "accent": "#8E9AAF",
+    "text": "white", "lab": "#B0B7C3", "tn_text": "black"
+},
+
+"TURQUOISE SOFT": {
+    "bg": "#E0F7FA", "head": "#B2EBF2", "accent": "#0097A7",
+    "text": "black", "lab": "#006064", "tn_text": "black"
+},
+
+"BRUN CAFÉ": {
+    "bg": "#2A1A12", "head": "#3D2417", "accent": "#C19A6B",
+    "text": "white", "lab": "#E0C097", "tn_text": "black"
+},
+
+"BLEU ACIER": {
+    "bg": "#0F1C2E", "head": "#1B2A41", "accent": "#4F81BD",
+    "text": "white", "lab": "#9FB6D5", "tn_text": "black"
+},
+
+"MENTHE FRAÎCHE": {
+    "bg": "#E6FFF4", "head": "#CFF5E7", "accent": "#2ECC71",
+    "text": "black", "lab": "#1E8449", "tn_text": "black"
+},"BLEU NÉON": {
+    "bg": "#020A1A",
+    "head": "#041C3C",
+    "accent": "#00FFFF",
+    "text": "white",
+    "lab": "#7FDBFF",
+    "tn_text": "black"
+},
+
+"NOIR MAT": {
+    "bg": "#0B0B0B",
+    "head": "#1A1A1A",
+    "accent": "#AAAAAA",
+    "text": "white",
+    "lab": "#777777",
+    "tn_text": "black"
+},
+
+"VERT LIME TECH": {
+    "bg": "#0F1F0F",
+    "head": "#1E3D1E",
+    "accent": "#A4FF00",
+    "text": "white",
+    "lab": "#C7FF8A",
+    "tn_text": "black"
+},
+
+"BLEU CIEL PRO": {
+    "bg": "#EAF6FF",
+    "head": "#CFE8FF",
+    "accent": "#0077B6",
+    "text": "black",
+    "lab": "#4A6FA5",
+    "tn_text": "black"
+},
+
+"ROUGE NOIR": {
+    "bg": "#120000",
+    "head": "#2A0000",
+    "accent": "#FF1E1E",
+    "text": "white",
+    "lab": "#FF7B7B",
+    "tn_text": "white"
+},
+
+"OR IMPÉRIAL": {
+    "bg": "#1C1400",
+    "head": "#3B2F00",
+    "accent": "#FFD700",
+    "text": "white",
+    "lab": "#FFE680",
+    "tn_text": "black"
+},
+
+"BLEU COBALT": {
+    "bg": "#001F54",
+    "head": "#003A8F",
+    "accent": "#4DA3FF",
+    "text": "white",
+    "lab": "#AFCBFF",
+    "tn_text": "black"
+},
+
+"GRAPHITE": {
+    "bg": "#1B1D1F",
+    "head": "#2A2D31",
+    "accent": "#9AA0A6",
+    "text": "white",
+    "lab": "#C5C9CE",
+    "tn_text": "black"
+},
+
+"BLEU INDIGO": {
+    "bg": "#1A1F4B",
+    "head": "#2A2F6B",
+    "accent": "#5C7CFA",
+    "text": "white",
+    "lab": "#B6C4FF",
+    "tn_text": "black"
+},
+
+"VERT FOREST": {
+    "bg": "#0E1A14",
+    "head": "#1B3326",
+    "accent": "#2ECC71",
+    "text": "white",
+    "lab": "#A9DFBF",
+    "tn_text": "black"
+},
+"ORANGE OFFICIEL": {
+    "bg": "#2B1300",
+    "head": "#FF7900",
+    "accent": "#FFFFFF",
+    "text": "white",
+    "lab": "#FFD6A0",
+    "tn_text": "black"
+},
+
+"MTN OFFICIEL": {
+    "bg": "#002147",
+    "head": "#FFD100",
+    "accent": "#002147",
+    "text": "white",
+    "lab": "#FFF2A6",
+    "tn_text": "black"
+},
+
+"MOOV OFFICIEL": {
+    "bg": "#001A0F",
+    "head": "#00A859",
+    "accent": "#FFFFFF",
+    "text": "white",
+    "lab": "#9FF5C8",
+    "tn_text": "black"
+}
+
+    }
+    c = colors.get(theme_name, colors["NOIR & OR"])
+    img = Image.new("RGB", (W, H))
+    draw = ImageDraw.Draw(img)
+
+    top = ImageColor.getrgb(c["bg"])
+    bottom = ImageColor.getrgb(c["head"])
+    draw_vertical_gradient(draw, W, H, top, bottom)
+    # Chargement des polices DejaVu de Termux
+    f_bold = get_termux_font(bold=True)
+    f_reg = get_termux_font(bold=False)
+
+    try:
+        f_h = ImageFont.truetype(f_bold, 55) if f_bold else ImageFont.load_default()
+        f_l = ImageFont.truetype(f_bold, 22) if f_bold else ImageFont.load_default()
+        f_v = ImageFont.truetype(f_reg, 35) if f_reg else ImageFont.load_default()
+        f_tn = ImageFont.truetype(f_bold, 45) if f_bold else ImageFont.load_default()
+    except:
+        f_h = f_l = f_v = f_tn = ImageFont.load_default()
+
+    # Header
+    draw.rectangle([0, 0, W, 160], fill=c["head"])
+    draw.line([0, 160, W, 160], fill=c["accent"], width=5)
+    draw.text((50, 50), "FICHE D'INSTALLATION FTTH", fill=c["accent"], font=f_h)
+
+    # Identifiant TN (Rectangle en haut à droite)
+    tn_val = clean_val(row.get('Numéro FTTH (TN)', ''))
+    date_rdv = clean_val(row.get("Horodateur", ""))
+
+
+    draw.rectangle([750, 190, 1150, 320], fill=c["accent"])
+    draw.text((770, 205), "IDENTIFIANT TN", fill=c["tn_text"], font=f_l)
+    draw.text((770, 245), tn_val if tn_val else "À GÉNÉRER", fill=c["tn_text"], font=f_tn)
+    draw.text((770, 295), f"RDV : {date_rdv}", fill=c["tn_text"], font=f_l)
+
+
+
+    # Préparation des données
+    ville = clean_val(row.get("Ville/Commune d'habitation du Client", ""))
+    quart_col = [col for col in row.index if "Quartier" in col]
+    quartier = clean_val(row.get(quart_col[0], "")) if quart_col else ""
+
+    data = [
+        ("NOM DU CLIENT", clean_val(row.get('Nom et Prénoms du Client', ''), "NOM INCONNU").upper()),
+        ("CONTACTS TÉLÉPHONIQUES",
+         f"{format_tel(row.get('Contact du Client'))} / {format_tel(row.get('Second contact du Client'))}"),
+        ("LOCALISATION", f"{ville} - {quartier}"),
+        ("PROVENANCE", clean_val(row.get('Provenance', 'DIRECT')).upper()),
+        ("NUMÉRO DE TICKET", clean_val(row.get('Numéro Ticket', 'NON FOURNI')).upper()),
+        ("OFFRE SOUSCRITE", clean_val(row.get('Forfaits FTTH', 'FIBRE')).upper()),
+        ("ÉQUIPE TECHNIQUE", team.upper()),
+        ("DATE DE TRANSMISSION", clean_val(row.get('Date de Transmission', 'À CONFIRMER')))
+    ]
+
+
+    # Dessin des lignes (current_y incrémenté pour éviter les décalages)
+    current_y = 200
+    for label, val in data:
+        draw.text((50, current_y), label, fill=c["lab"], font=f_l)
+        draw.text((50, current_y + 40), str(val), fill=c["text"], font=f_v)
+        draw.line([50, current_y + 95, 720, current_y + 95], fill=c["lab"], width=1)
+        current_y += 130
+
+        # Footer
+    draw.rectangle([0, H - 70, W, H], fill=c["accent"])
+    draw.text((50, H - 55), "MG TELECOM - GÉNÉRÉ DEPUIS TERMUX", fill=c["tn_text"], font=f_l)
+    # Identifiant fichier
+    filename = "".join(filter(str.isalnum,clean_val(row.get("Nom et Prénoms du Client", "Client"))))[:15]
+
+# Générer page HTML
+    generate_client_page(row, team, filename)
+
+# 🔴 REMPLACE TON USER GITHUB ICI
+    url = f"https://Nylockdev.github.io/mg-ftth/client_{filename}.html"
+
+# Générer QR code HTTPS
+    generate_qr_https(url, filename)
+
+    output_dir = "EXPORT_MGT"
+    if not os.path.exists(output_dir): os.makedirs(output_dir)
+    client_name = "".join(filter(str.isalnum, clean_val(row.get('Nom et Prénoms du Client', 'Client'))))[:15]
+    img.save(f"{output_dir}/Fiche_{client_name}.png")
+
+def draw_vertical_gradient(draw, width, height, top_color, bottom_color):
+    for y in range(height):
+        ratio = y / height
+        r = int(top_color[0] * (1 - ratio) + bottom_color[0] * ratio)
+        g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
+        b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
+        draw.line([(0, y), (width, y)], fill=(r, g, b))
+
+def main():
+    console.print("\n[bold gold1]📱 MG TELECOM : INTERACTIF (MODE TERMUX)[/bold gold1]\n")
+
+    # Détection automatique du fichier
+    files = [f for f in os.listdir('.') if f.endswith(('.xlsx', '.csv'))]
+    if not files:
+        console.print("[red]❌ Erreur : Aucun fichier Excel/CSV dans ce dossier.[/red]")
+        return
+
+    console.print("Fichiers trouvés :")
+    for i, f in enumerate(files, 1): console.print(f" {i}. {f}")
+    choix = Prompt.ask("Choisir le fichier", choices=[str(i) for i in range(1, len(files) + 1)])
+    file_path = files[int(choix) - 1]
+
+    df = pd.read_excel(file_path) if file_path.endswith('.xlsx') else pd.read_csv(file_path)
+
+    # Filtre Ville
+    v_col = "Ville/Commune d'habitation du Client"
+    villes = ["TOUTES"] + sorted([str(v).strip().upper() for v in df[v_col].unique() if pd.notna(v)])
+    v_sel = Prompt.ask("📍 Filtrer par ville", choices=villes, default="TOUTES")
+    if v_sel != "TOUTES":
+        df = df[df[v_col].str.contains(v_sel, case=False, na=False)]
+
+    # Thème
+    for k, v in THEMES.items(): console.print(f" {k} : {v}")
+    theme_name = THEMES[Prompt.ask("🎨 Choisir un thème", choices=list(THEMES.keys()), default="1")]
+
+    # Attribution interactive
+    df = df.sort_values(by=v_col)
+    final_list = []
+    derniere_eq = "WINAT"
+
+    console.print(f"\n[bold cyan]Attribution de {len(df)} dossiers :[/bold cyan]")
+    for i, (_, row) in enumerate(df.iterrows(), 1):
+        nom = clean_val(row.get('Nom et Prénoms du Client', 'INCONNU')).upper()
+        console.print(f"\n[white][{i}/{len(df)}][/white] [cyan]{nom}[/cyan]")
+        eq = Prompt.ask("👉 Équipe", default=derniere_eq)
+        derniere_eq = eq
+        final_list.append((row, eq))
+    date_pdf = clean_val(
+    final_list[0][0].get("Date de RDV"),
+    datetime.now().strftime("%d-%m-%Y")
+)
+
+    export_pdf(date_pdf)
+    # Production
+    if Confirm.ask(f"\nGénérer les {len(final_list)} fiches ?"):
+        for r, t in track(final_list, description="Génération des images..."):
+            create_card(r, t, theme_name)
+        console.print(f"\n[bold green]✅ Succès ! Dossier : EXPORT_MGT[/bold green]")
+
+
+if __name__ == "__main__":
+    main()

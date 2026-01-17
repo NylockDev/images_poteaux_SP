@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTTH Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const forfaits = [10000, 15000, 20000, 25000];
+        const brinColors = ['bleu', 'orange', 'vert', 'marron', 'gris', 'blanc', 'rouge', 'noir', 'jaune', 'violet', 'rose', 'turquois'];
+        const configStatuses = ['en cours', 'non ok', 'en attente'];
+
+        function FTTHManager() {
+            const [clients, setClients] = useState([]);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [showDetailsModal, setShowDetailsModal] = useState(null);
+            const [showEtudeModal, setShowEtudeModal] = useState(null);
+            const [showSummaryModal, setShowSummaryModal] = useState(false);
+
+            // Charger les données depuis localStorage au démarrage
+            useEffect(() => {
+                // Fonction d'initialisation déjà gérée plus bas
+            }, []);
+
+            // Sauvegarder les données dans localStorage à chaque modification
+            useEffect(() => {
+                localStorage.setItem('ftth_clients', JSON.stringify(clients));
+            }, [clients]);
+
+            const getDataURL = (file) => {
+                return new Promise((resolve, reject) => {
+                    if (!file) {
+                        resolve(null);
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            const addClient = async (clientData, files = {}) => {
+                const client = {
+                    id: Date.now().toString(),
+                    ...clientData,
+                    date: selectedDate,
+                    isConnected: false,
+                    startTirage: null,
+                    endTirage: null,
+                    pto: false,
+                    pb: false,
+                    brinColor: '',
+                    configStatus: '',
+                    images: {},
+                    isEtude: false,
+                    inEtude: false,
+                    poteauxImplant: 0,
+                    poteauxExist: 0,
+                    cableMeter: 0,
+                    pincesTendeur: 0,
+                    materials: {
+                        PTO: 0, SMOOV: 0, JARRETIÈRE: 0, CÂBLE: 0, 'BATON À COLLE': 0,
+                        COLLIER: 0, 'PINCE TENDEUR': 0, 'ATTACHE MURALE': 0, PITHON: 0
+                    },
+                    brinOccupe: 0,
+                    brinDisponible: 0,
+                    puissancePbOk: false,
+                    poseEtiquettesOk: false
+                };
+
+                // Traitement des images
+                for (const [key, file] of Object.entries(files)) {
+                    if (file && file.size > 0) {
+                        try {
+                            const dataURL = await getDataURL(file);
+                            if (dataURL) {
+                                client.images[key] = dataURL;
+                            }
+                        } catch (error) {
+                            console.error(`Erreur lors du traitement de l'image ${key}:`, error);
+                        }
+                    }
+                }
+
+                setClients([...clients, client]);
+                setShowAddModal(false);
+            };
+
+            const updateClient = (id, updates) => {
+                setClients(clients.map(c => c.id === id ? { ...c, ...updates } : c));
+            };
+
+            const deleteClient = (id) => {
+                if (window.confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
+                    setClients(clients.filter(c => c.id !== id));
+                    setShowDetailsModal(null);
+                }
+            };
+
+            const startEtude = (client) => {
+                const etudeClient = { 
+                    ...client, 
+                    id: Date.now().toString(), 
+                    isEtude: true,
+                    name: `${client.name} (Étude)`
+                };
+                updateClient(client.id, { inEtude: true });
+                setClients([...clients, etudeClient]);
+                setShowDetailsModal(null);
+                setShowEtudeModal(etudeClient);
+            };
+
+            const saveEtude = async (etudeData, client, files = {}) => {
+                const updates = { ...etudeData };
+                
+                // Traitement des nouvelles images
+                for (const [key, file] of Object.entries(files)) {
+                    if (file && file.size > 0) {
+                        try {
+                            const dataURL = await getDataURL(file);
+                            if (dataURL) {
+                                updates.images = { ...client.images, [key]: dataURL };
+                            }
+                        } catch (error) {
+                            console.error(`Erreur lors du traitement de l'image ${key}:`, error);
+                        }
+                    }
+                }
+
+                updateClient(client.id, updates);
+                setShowEtudeModal(null);
+            };
+
+            const generateSummary = async () => {
+                const filtered = clients.filter(c => c.date === selectedDate && !c.isEtude);
+                const connected = filtered.filter(c => c.isConnected).length;
+                const notConnected = filtered.length - connected;
+                
+                const formatClient = (c) => `
+CLIENT: ${c.name.toUpperCase()}
+NUMÉRO: ${c.contact}
+TN: ${c.tn}
+Couleur du Brin: ${c.brinColor.toUpperCase()}
+FORFAITS ${c.forfait}F
+- [${c.configStatus.includes('ok') ? 'x' : ' '}] *Configuration OK
+- [ ] *Activation forfait OK
+- [${c.isConnected ? 'x' : ' '}] *CONNEXION OK
+
+- MATÉRIELS UTILISER 
+${Object.entries(c.materials).map(([k, v]) => `- [ ] *${k}: ${v}`).join('\n')}
+- PUISSANCE AU PB OK  [${c.puissancePbOk ? 'x' : ' '}]
+- BRIN OCCUPÉ: ${c.brinOccupe}
+- BRIN DISPONIBLE: ${c.brinDisponible}
+- RACCORDEMENT PB   OK [${c.pb ? 'x' : ' '}]
+- RACCORDEMENT PTO *OK [${c.pto ? 'x' : ' '}]
+- POSE *D'ÉTIQUETTES     OK [${c.poseEtiquettesOk ? 'x' : ' '}]
+                `.trim();
+
+                const text = `Point Journalier ${selectedDate}
+Total Clients: ${filtered.length}
+Connectés: ${connected}
+Non Connectés: ${notConnected}
+
+${filtered.map(c => formatClient(c)).join('\n\n')}`;
+
+                // Copier dans le presse-papiers
+                try {
+                    await navigator.clipboard.writeText(text.replace(/\[x\]/g, '✅').replace(/\[ \]/g, '⬜'));
+                    
+                    // Générer le PDF
+                    const pdf = await PDFLib.PDFDocument.create();
+                    const page = pdf.addPage();
+                    const { width, height } = page.getSize();
+                    
+                    // Diviser le texte en lignes pour qu'il rentre dans la page
+                    const lines = text.split('\n');
+                    const fontSize = 10;
+                    const lineHeight = fontSize + 2;
+                    let yPosition = height - 50;
+                    
+                    for (const line of lines) {
+                        if (yPosition < 50) {
+                            // Créer une nouvelle page si nécessaire
+                            const newPage = pdf.addPage();
+                            yPosition = newPage.getSize().height - 50;
+                            newPage.drawText(line.substring(0, 100), {
+                                x: 50,
+                                y: yPosition,
+                                size: fontSize,
+                            });
+                        } else {
+                            page.drawText(line.substring(0, 100), {
+                                x: 50,
+                                y: yPosition,
+                                size: fontSize,
+                            });
+                        }
+                        yPosition -= lineHeight;
+                    }
+                    
+                    const pdfBytes = await pdf.save();
+                    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                    saveAs(blob, `point_journalier_${selectedDate}.pdf`);
+                    
+                    alert('✅ Résumé copié dans le presse-papiers et PDF généré !');
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('❌ Erreur lors de la génération du rapport');
+                }
+            };
+
+            const exportData = () => {
+                const dataStr = JSON.stringify(clients, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                saveAs(dataBlob, `ftth_data_${new Date().toISOString().split('T')[0]}.json`);
+            };
+
+            const importData = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const importedClients = JSON.parse(e.target.result);
+                            if (Array.isArray(importedClients)) {
+                                setClients(importedClients);
+                                alert('✅ Données importées avec succès !');
+                            } else {
+                                alert('❌ Format de fichier invalide');
+                            }
+                        } catch (error) {
+                            alert('❌ Erreur lors de l\'importation');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+                event.target.value = '';
+            };
+
+            const filteredClients = clients.filter(c => 
+                c.date === selectedDate &&
+                (c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                 c.contact.includes(searchQuery) ||
+                 c.tn.includes(searchQuery))
+            );
+
+            const AddClientModal = () => {
+                const [formData, setFormData] = useState({
+                    name: '', contact: '', neighborhood: '', tn: '', forfait: 10000, zone: ''
+                });
+                const [files, setFiles] = useState({});
+
+                const handleSubmit = () => {
+                    if (formData.name && formData.contact && formData.neighborhood && formData.tn) {
+                        addClient(formData, files);
+                    } else {
+                        alert('Veuillez remplir tous les champs obligatoires (Nom, Contact, Quartier, TN)');
+                    }
+                };
+
+                const handleChange = (field, value) => {
+                    setFormData(prev => ({ ...prev, [field]: value }));
+                };
+
+                const handleFileChange = (field, file) => {
+                    setFiles(prev => ({ ...prev, [field]: file }));
+                };
+
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Ajouter Client</h2>
+                                <button onClick={() => setShowAddModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Nom et Prénoms *</label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.name}
+                                        onChange={(e) => handleChange('name', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        placeholder="Nom complet du client"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Contact *</label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.contact}
+                                        onChange={(e) => handleChange('contact', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        placeholder="Numéro de téléphone"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Quartier *</label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.neighborhood}
+                                        onChange={(e) => handleChange('neighborhood', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        placeholder="Nom du quartier"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Numéro FTTH (TN) *</label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.tn}
+                                        onChange={(e) => handleChange('tn', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        placeholder="Numéro technique"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Forfait</label>
+                                    <select 
+                                        value={formData.forfait}
+                                        onChange={(e) => handleChange('forfait', parseInt(e.target.value))}
+                                        className="w-full border border-gray-300 rounded px-3 py-2"
+                                    >
+                                        {forfaits.map(f => <option key={f} value={f}>{f} F</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Zone</label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.zone}
+                                        onChange={(e) => handleChange('zone', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        placeholder="Zone géographique"
+                                    />
+                                </div>
+                                
+                                <div className="border-t pt-4">
+                                    <h3 className="font-medium mb-3">Photos (optionnel)</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-sm mb-1">Photo PB</label>
+                                            <input 
+                                                type="file" 
+                                                accept="image/*" 
+                                                onChange={(e) => handleFileChange('pb', e.target.files[0])}
+                                                className="w-full text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm mb-1">BOX recto</label>
+                                            <input 
+                                                type="file" 
+                                                accept="image/*" 
+                                                onChange={(e) => handleFileChange('box_recto', e.target.files[0])}
+                                                className="w-full text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm mb-1">BOX verso</label>
+                                            <input 
+                                                type="file" 
+                                                accept="image/*" 
+                                                onChange={(e) => handleFileChange('box_verso', e.target.files[0])}
+                                                className="w-full text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm mb-1">Reçu</label>
+                                            <input 
+                                                type="file" 
+                                                accept="image/*" 
+                                                onChange={(e) => handleFileChange('recu', e.target.files[0])}
+                                                className="w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button onClick={handleSubmit} className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                                    Enregistrer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const DetailsModal = ({ client }) => {
+                const handleMaterialChange = (material, increment) => {
+                    const newMaterials = { ...client.materials };
+                    newMaterials[material] = Math.max(0, newMaterials[material] + increment);
+                    updateClient(client.id, { materials: newMaterials });
+                };
+
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Détails du Client</h2>
+                                <button onClick={() => setShowDetailsModal(null)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-6">
+                                    <div>
+                                        <h3 className="font-semibold mb-2 text-blue-600">Informations</h3>
+                                        <div className="grid grid-cols-1 gap-2 text-sm bg-gray-50 p-3 rounded">
+                                            <p><span className="font-medium">Nom:</span> {client.name}</p>
+                                            <p><span className="font-medium">Contact:</span> {client.contact}</p>
+                                            <p><span className="font-medium">Quartier:</span> {client.neighborhood}</p>
+                                            <p><span className="font-medium">TN:</span> {client.tn}</p>
+                                            <p><span className="font-medium">Forfait:</span> {client.forfait} F</p>
+                                            <p><span className="font-medium">Zone:</span> {client.zone}</p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-semibold mb-2 text-green-600">Installation</h3>
+                                        <div className="space-y-3 bg-gray-50 p-3 rounded">
+                                            <div className="flex items-center space-x-2">
+                                                <label className="text-sm w-24">Début:</label>
+                                                <input 
+                                                    type="time" 
+                                                    value={client.startTirage || ''}
+                                                    onChange={e => updateClient(client.id, { startTirage: e.target.value })} 
+                                                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                                />
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <label className="text-sm w-24">Fin:</label>
+                                                <input 
+                                                    type="time" 
+                                                    value={client.endTirage || ''}
+                                                    onChange={e => updateClient(client.id, { endTirage: e.target.value })} 
+                                                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                                                />
+                                                {client.endTirage && <span className="text-green-500">✓</span>}
+                                            </div>
+                                            <div className="flex items-center space-x-4">
+                                                <label className="flex items-center">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={client.pto} 
+                                                        onChange={e => updateClient(client.id, { pto: e.target.checked })} 
+                                                        className="mr-1"
+                                                    /> 
+                                                    PTO
+                                                </label>
+                                                <label className="flex items-center">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={client.pb} 
+                                                        onChange={e => updateClient(client.id, { pb: e.target.checked })} 
+                                                        className="mr-1"
+                                                    /> 
+                                                    PB
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <select 
+                                                    value={client.brinColor} 
+                                                    onChange={e => updateClient(client.id, { brinColor: e.target.value })}
+                                                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                                                >
+                                                    <option value="">Couleur du brin</option>
+                                                    {brinColors.map(c => <option key={c} value={c}>{c}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-semibold mb-2 text-orange-600">Configuration</h3>
+                                        <div className="space-y-2 bg-gray-50 p-3 rounded">
+                                            {configStatuses.map(status => (
+                                                <label key={status} className="flex items-center">
+                                                    <input 
+                                                        type="radio" 
+                                                        name={`configStatus_${client.id}`}
+                                                        value={status} 
+                                                        checked={client.configStatus === status}
+                                                        onChange={e => updateClient(client.id, { configStatus: e.target.value })} 
+                                                        className="mr-2"
+                                                    /> 
+                                                    {status}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-semibold mb-2 text-purple-600">Connexion</h3>
+                                        <div className="bg-gray-50 p-3 rounded">
+                                            <label className="flex items-center">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={client.isConnected} 
+                                                    onChange={e => updateClient(client.id, { isConnected: e.target.checked })} 
+                                                    className="mr-2"
+                                                /> 
+                                                Connexion OK
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <h3 className="font-semibold mb-2 text-red-600">Matériels</h3>
+                                        <div className="bg-gray-50 p-3 rounded max-h-60 overflow-y-auto">
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {Object.entries(client.materials).map(([key, value]) => (
+                                                    <div key={key} className="flex items-center justify-between text-sm">
+                                                        <span className="truncate mr-2">{key}:</span>
+                                                        <div className="flex items-center space-x-1">
+                                                            <button 
+                                                                onClick={() => handleMaterialChange(key, -1)}
+                                                                className="w-6 h-6 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                                                            >-</button>
+                                                            <span className="w-8 text-center font-medium">{value}</span>
+                                                            <button 
+                                                                onClick={() => handleMaterialChange(key, 1)}
+                                                                className="w-6 h-6 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                                                            >+</button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-semibold mb-2 text-indigo-600">Contrôles</h3>
+                                        <div className="space-y-2 bg-gray-50 p-3 rounded">
+                                            <label className="flex items-center">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={client.puissancePbOk} 
+                                                    onChange={e => updateClient(client.id, { puissancePbOk: e.target.checked })} 
+                                                    className="mr-2"
+                                                /> 
+                                                Puissance PB OK
+                                            </label>
+                                            <label className="flex items-center">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={client.poseEtiquettesOk} 
+                                                    onChange={e => updateClient(client.id, { poseEtiquettesOk: e.target.checked })} 
+                                                    className="mr-2"
+                                                /> 
+                                                Pose étiquettes OK
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-2 mt-2">
+                                                <div>
+                                                    <label className="block text-xs mb-1">Brin Occupé</label>
+                                                    <input 
+                                                        type="number" 
+                                                        value={client.brinOccupe} 
+                                                        onChange={e => updateClient(client.id, { brinOccupe: parseInt(e.target.value) || 0 })} 
+                                                        className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs mb-1">Brin Disponible</label>
+                                                    <input 
+                                                        type="number" 
+                                                        value={client.brinDisponible} 
+                                                        onChange={e => updateClient(client.id, { brinDisponible: parseInt(e.target.value) || 0 })} 
+                                                        className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {Object.keys(client.images).length > 0 && (
+                                        <div>
+                                            <h3 className="font-semibold mb-2 text-pink-600">Images</h3>
+                                            <div className="bg-gray-50 p-3 rounded max-h-60 overflow-y-auto">
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {Object.entries(client.images).map(([key, url]) => (
+                                                        <div key={key} className="text-center">
+                                                            <p className="text-xs mb-1 capitalize">{key.replace('_', ' ')}</p>
+                                                            <img src={url} alt={key} className="w-full h-20 object-cover rounded border" />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div>
+                                        <h3 className="font-semibold mb-2 text-teal-600">Actions</h3>
+                                        <div className="space-y-2">
+                                            <button 
+                                                onClick={() => startEtude(client)} 
+                                                className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                            >
+                                                Commencer Étude
+                                            </button>
+                                            <label className="flex items-center">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={!client.inEtude} 
+                                                    onChange={e => updateClient(client.id, { inEtude: !e.target.checked })} 
+                                                    className="mr-2"
+                                                /> 
+                                                Étude terminée
+                                            </label>
+                                            <button 
+                                                onClick={() => deleteClient(client.id)} 
+                                                className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                                            >
+                                                Supprimer Client
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const EtudeModal = ({ client }) => {
+                const [etudeData, setEtudeData] = useState({
+                    poteauxImplant: client.poteauxImplant,
+                    poteauxExist: client.poteauxExist,
+                    cableMeter: client.cableMeter,
+                    pincesTendeur: client.pincesTendeur
+                });
+                const [files, setFiles] = useState({});
+
+                const handleSubmit = () => {
+                    saveEtude(etudeData, client, files);
+                };
+
+                const handleChange = (field, value) => {
+                    setEtudeData(prev => ({ ...prev, [field]: parseInt(value) || 0 }));
+                };
+
+                const handleFileChange = (field, file) => {
+                    setFiles(prev => ({ ...prev, [field]: file }));
+                };
+
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Étude Technique</h2>
+                                <button onClick={() => setShowEtudeModal(null)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Poteaux à implanter</label>
+                                    <input 
+                                        type="number" 
+                                        value={etudeData.poteauxImplant}
+                                        onChange={e => handleChange('poteauxImplant', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Poteaux existants</label>
+                                    <input 
+                                        type="number" 
+                                        value={etudeData.poteauxExist}
+                                        onChange={e => handleChange('poteauxExist', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Métrage de câble (m)</label>
+                                    <input 
+                                        type="number" 
+                                        value={etudeData.cableMeter}
+                                        onChange={e => handleChange('cableMeter', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Pinces tendeur</label>
+                                    <input 
+                                        type="number" 
+                                        value={etudeData.pincesTendeur}
+                                        onChange={e => handleChange('pincesTendeur', e.target.value)}
+                                        className="w-full border border-gray-300 rounded px-3 py-2" 
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Photo poteau</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={(e) => handleFileChange('poteau', e.target.files[0])}
+                                        className="w-full text-sm"
+                                    />
+                                </div>
+                                <button onClick={handleSubmit} className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                                    Enregistrer Étude
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const SummaryModal = () => {
+                const filtered = clients.filter(c => c.date === selectedDate && !c.isEtude);
+                const connected = filtered.filter(c => c.isConnected).length;
+                const notConnected = filtered.length - connected;
+                const inProgress = filtered.filter(c => !c.isConnected && (c.startTirage || c.pto || c.pb)).length;
+
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-lg w-full">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold">Point Journalier</h2>
+                                <button onClick={() => setShowSummaryModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h3 className="font-semibold mb-3">Statistiques du {selectedDate}</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold text-blue-600">{filtered.length}</p>
+                                            <p className="text-sm text-gray-600">Total Clients</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold text-green-600">{connected}</p>
+                                            <p className="text-sm text-gray-600">Connectés</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold text-orange-600">{inProgress}</p>
+                                            <p className="text-sm text-gray-600">En cours</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-2xl font-bold text-red-600">{notConnected}</p>
+                                            <p className="text-sm text-gray-600">Non connectés</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <button 
+                                        onClick={generateSummary} 
+                                        className="w-full bg-blue-500 text-white py-3 px-4 rounded hover:bg-blue-600 font-medium"
+                                    >
+                                        📋 Générer Rapport PDF + Presse-papiers
+                                    </button>
+                                    <button 
+                                        onClick={exportData} 
+                                        className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+                                    >
+                                        💾 Exporter toutes les données
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+                    <div className="max-w-6xl mx-auto p-4">
+                        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                    FTTH Manager
+                                </h1>
+                                <div className="flex items-center space-x-2">
+                                    <label className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded cursor-pointer text-sm">
+                                        📥 Importer
+                                        <input 
+                                            type="file" 
+                                            accept=".json" 
+                                            onChange={importData}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="flex items-center space-x-2">
+                                    <label className="text-sm font-medium">Date:</label>
+                                    <input 
+                                        type="date" 
+                                        value={selectedDate} 
+                                        onChange={e => setSelectedDate(e.target.value)} 
+                                        className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <input 
+                                    type="text" 
+                                    placeholder="🔍 Recherche par nom, numéro, TN..." 
+                                    value={searchQuery} 
+                                    onChange={e => setSearchQuery(e.target.value)} 
+                                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                                <button 
+                                    onClick={() => setShowSummaryModal(true)} 
+                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 font-medium shadow-md"
+                                >
+                                    📊 Point Journalier
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
+                                <h2 className="text-lg font-semibold text-gray-700">
+                                    Clients du {new Date(selectedDate).toLocaleDateString('fr-FR', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
+                                </h2>
+                                <p className="text-sm text-gray-500 mt-1">
+                                    {filteredClients.length} client(s) • {filteredClients.filter(c => c.isConnected).length} connecté(s)
+                                </p>
+                            </div>
+                            
+                            {filteredClients.length === 0 ? (
+                                <div className="p-12 text-center">
+                                    <div className="text-6xl mb-4">📡</div>
+                                    <h3 className="text-lg font-medium text-gray-700 mb-2">Aucun client trouvé</h3>
+                                    <p className="text-gray-500">Ajoutez votre premier client pour cette date</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-gray-100">
+                                    {filteredClients.map(client => (
+                                        <div key={client.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-4">
+                                                    <div className="flex flex-col items-center">
+                                                        <div className={`w-4 h-4 rounded-full shadow-sm ${
+                                                            client.isConnected ? 'bg-green-500' : 
+                                                            (client.startTirage || client.pto || client.pb) ? 'bg-orange-500' : 
+                                                            'bg-red-500'
+                                                        }`}></div>
+                                                        <div className="text-xs mt-1 text-gray-500">
+                                                            {client.isConnected ? '✓' : 
+                                                             (client.startTirage || client.pto || client.pb) ? '⚠️' : '❌'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center space-x-3">
+                                                            <h3 className="font-semibold text-gray-900">{client.name}</h3>
+                                                            <div className="flex space-x-2">
+                                                                {client.isEtude && 
+                                                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                                                                        📋 Étude
+                                                                    </span>
+                                                                }
+                                                                {client.inEtude && 
+                                                                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-medium">
+                                                                        ⏳ En cours d'étude
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm text-gray-600 mt-1">
+                                                            <span className="font-medium">📞 {client.contact}</span> • 
+                                                            <span className="ml-1 font-medium">📍 TN: {client.tn}</span> • 
+                                                            <span className="ml-1">{client.forfait}F</span>
+                                                            {client.brinColor && (
+                                                                <span className="ml-2 text-xs bg-gray-200 px-2 py-1 rounded">
+                                                                    🎨 {client.brinColor}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 mt-1">
+                                                            📍 {client.neighborhood} {client.zone && `• ${client.zone}`}
+                                                            {(client.startTirage || client.endTirage) && (
+                                                                <span className="ml-2">
+                                                                    ⏰ {client.startTirage || '—'} → {client.endTirage || '—'}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    onClick={() => setShowDetailsModal(client)} 
+                                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200 font-medium"
+                                                >
+                                                    Détails →
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Bouton flottant */}
+                        <button 
+                            onClick={() => setShowAddModal(true)} 
+                            className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110"
+                        >
+                            +
+                        </button>
+
+                        {/* Modales */}
+                        {showAddModal && <AddClientModal />}
+                        {showDetailsModal && <DetailsModal client={showDetailsModal} />}
+                        {showEtudeModal && <EtudeModal client={showEtudeModal} />}
+                        {showSummaryModal && <SummaryModal />}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<FTTHManager />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,766 @@
+#!/bin/bash
+
+# Script d'installation automatique FTTH Manager
+# By Nylockdev
+
+echo "🚀 Installation de FTTH Manager avec Vite..."
+echo ""
+
+# Créer le projet Vite
+echo "📦 Création du projet Vite..."
+npm create vite@latest ftth-manager -- --template react
+
+# Aller dans le dossier
+cd ftth-manager
+
+# Installer les dépendances
+echo ""
+echo "📥 Installation des dépendances..."
+npm install
+
+# Installer Tailwind et Lucide
+echo ""
+echo "🎨 Installation de Tailwind CSS et Lucide Icons..."
+npm install -D tailwindcss postcss autoprefixer
+npm install lucide-react
+
+# Créer la configuration Tailwind manuellement (fix pour Termux/certains environnements)
+echo ""
+echo "⚙️ Configuration de Tailwind..."
+
+# Créer postcss.config.js
+cat > postcss.config.js << 'EOF'
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+EOF
+
+# Créer tailwind.config.js
+cat > tailwind.config.js << 'EOF'
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+EOF
+
+# Créer src/index.css
+cat > src/index.css << 'EOF'
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+EOF
+
+# Créer src/storage.js
+cat > src/storage.js << 'EOF'
+// Simulation de window.storage pour le développement local
+export const storage = {
+  async get(key) {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? { value: data } : null;
+    } catch (error) {
+      console.error('Storage get error:', error);
+      return null;
+    }
+  },
+  
+  async set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return { key, value };
+    } catch (error) {
+      console.error('Storage set error:', error);
+      return null;
+    }
+  },
+  
+  async delete(key) {
+    try {
+      localStorage.removeItem(key);
+      return { key, deleted: true };
+    } catch (error) {
+      console.error('Storage delete error:', error);
+      return null;
+    }
+  },
+  
+  async list(prefix) {
+    try {
+      const keys = Object.keys(localStorage)
+        .filter(k => !prefix || k.startsWith(prefix));
+      return { keys };
+    } catch (error) {
+      console.error('Storage list error:', error);
+      return { keys: [] };
+    }
+  }
+};
+
+// Rendre disponible globalement
+if (typeof window !== 'undefined') {
+  window.storage = storage;
+}
+EOF
+
+# Créer src/App.jsx
+cat > src/App.jsx << 'EOF'
+import React, { useState, useEffect } from 'react';
+import { Camera, Upload, Users, FileDown, BarChart3, Plus, Search, Check, X, AlertCircle, Trash2 } from 'lucide-react';
+
+const FTTHManager = () => {
+  const [clients, setClients] = useState([]);
+  const [prestataire, setPrestataire] = useState('');
+  const [equipe, setEquipe] = useState('');
+  const [logoPrestataire, setLogoPrestataire] = useState('');
+  const [logoEquipe, setLogoEquipe] = useState('');
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('import');
+  const [showStats, setShowStats] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const clientsData = await window.storage.get('ftth-clients');
+      const configData = await window.storage.get('ftth-config');
+      
+      if (clientsData) setClients(JSON.parse(clientsData.value));
+      if (configData) {
+        const config = JSON.parse(configData.value);
+        setPrestataire(config.prestataire || '');
+        setEquipe(config.equipe || '');
+        setLogoPrestataire(config.logoPrestataire || '');
+        setLogoEquipe(config.logoEquipe || '');
+      }
+    } catch (error) {
+      console.log('Première utilisation - données non trouvées');
+    }
+  };
+
+  const saveData = async (newClients = clients) => {
+    try {
+      await window.storage.set('ftth-clients', JSON.stringify(newClients));
+      await window.storage.set('ftth-config', JSON.stringify({
+        prestataire,
+        equipe,
+        logoPrestataire,
+        logoEquipe
+      }));
+    } catch (error) {
+      console.error('Erreur sauvegarde:', error);
+    }
+  };
+
+  const parseOCRImage = async (file) => {
+    const sampleData = [
+      {
+        id: Date.now() + 1,
+        nom: "YAO KOUADIO ISAAC",
+        contactClient: "0504355249",
+        contactSecondaire: "0709781020",
+        ville: "SAN PEDRO",
+        quartier: "Pharmacie du lac",
+        numeroFTTH: "253606880@mtn.ci",
+        numeroPack: "0504355249",
+        forfait: "10.000 F (100 Mb/s ; 4Go + 120 min)",
+        typeHabitation: "Maison basse",
+        dateInstallation: new Date().toISOString(),
+        prestataire,
+        equipe,
+        connexionOK: null,
+        connexionNOK: false,
+        motDePasseConfig: "",
+        configuration: "en cours",
+        poteauImplante: false,
+        nombrePoteaux: 0,
+        imagesPoteaux: [],
+        photoPb: null,
+        photoONT: null,
+        dateConnexionOK: null
+      }
+    ];
+    return sampleData;
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const newClients = await parseOCRImage(file);
+    const updatedClients = [...clients, ...newClients];
+    setClients(updatedClients);
+    await saveData(updatedClients);
+    alert(`${newClients.length} client(s) importé(s)`);
+  };
+
+  const updateClient = async (id, updates) => {
+    const updated = clients.map(c => 
+      c.id === id ? { ...c, ...updates } : c
+    );
+    setClients(updated);
+    await saveData(updated);
+  };
+
+  const deleteClient = async (id) => {
+    if (!confirm('Supprimer ce client ?')) return;
+    const updated = clients.filter(c => c.id !== id);
+    setClients(updated);
+    await saveData(updated);
+    setSelectedClient(null);
+  };
+
+  const handleImageUpload = (clientId, field, file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      updateClient(clientId, { [field]: e.target.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Nom', 'Contact', 'Ville', 'Quartier', 'N° FTTH', 'Forfait', 'Connexion OK', 'Configuration', 'Date Installation', 'Prestataire', 'Équipe'];
+    const rows = clients.map(c => [
+      c.nom, c.contactClient, c.ville, c.quartier, c.numeroFTTH, c.forfait,
+      c.connexionOK ? 'Oui' : 'Non', c.configuration, 
+      new Date(c.dateInstallation).toLocaleDateString(),
+      c.prestataire, c.equipe
+    ]);
+    
+    const csvContent = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ftth_export_${Date.now()}.csv`;
+    a.click();
+  };
+
+  const getStats = (period = 'day') => {
+    const now = new Date();
+    const filtered = clients.filter(c => {
+      const date = new Date(c.dateInstallation);
+      if (period === 'day') {
+        return date.toDateString() === now.toDateString();
+      } else if (period === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return date >= weekAgo;
+      }
+      return true;
+    });
+
+    const byEquipe = filtered.reduce((acc, c) => {
+      acc[c.equipe] = (acc[c.equipe] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      total: filtered.length,
+      connexionOK: filtered.filter(c => c.connexionOK).length,
+      configOK: filtered.filter(c => c.configuration === 'ok').length,
+      byEquipe
+    };
+  };
+
+  const filteredClients = clients.filter(c => 
+    c.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.numeroFTTH.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+      <div className="bg-black border-b-4 border-yellow-400 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {logoPrestataire && (
+                <img src={logoPrestataire} alt="Logo" className="h-12 w-12 rounded-lg object-cover" />
+              )}
+              <div>
+                <h1 className="text-2xl font-bold text-yellow-400">Gestionnaire FTTH Pro</h1>
+                <p className="text-gray-400 text-sm">{prestataire} - Équipe {equipe}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowStats(!showStats)}
+                className="px-4 py-2 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-300 flex items-center gap-2"
+              >
+                <BarChart3 size={20} />
+                Stats
+              </button>
+              <button
+                onClick={exportToCSV}
+                className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center gap-2"
+              >
+                <FileDown size={20} />
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showStats && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl p-6 max-w-2xl w-full border-2 border-yellow-400">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-yellow-400">Statistiques</h2>
+              <button onClick={() => setShowStats(false)} className="text-gray-400 hover:text-white">
+                <X size={24} />
+              </button>
+            </div>
+            
+            {['day', 'week'].map(period => {
+              const stats = getStats(period);
+              return (
+                <div key={period} className="mb-6 p-4 bg-gray-900 rounded-lg">
+                  <h3 className="text-lg font-bold text-yellow-400 mb-3">
+                    {period === 'day' ? "Aujourd'hui" : 'Cette semaine'}
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-white">{stats.total}</p>
+                      <p className="text-gray-400 text-sm">Installations</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-green-400">{stats.connexionOK}</p>
+                      <p className="text-gray-400 text-sm">Connexions OK</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-blue-400">{stats.configOK}</p>
+                      <p className="text-gray-400 text-sm">Config OK</p>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-gray-700 pt-3">
+                    <p className="text-sm text-gray-400 mb-2">Par équipe:</p>
+                    {Object.entries(stats.byEquipe).map(([eq, count]) => (
+                      <div key={eq} className="flex justify-between text-white mb-1">
+                        <span>{eq}</span>
+                        <span className="font-bold text-yellow-400">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {activeTab === 'import' && (
+          <div className="bg-gray-800 rounded-xl p-6 mb-6 border-2 border-yellow-400">
+            <h2 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
+              <Upload size={24} />
+              Configuration & Import
+            </h2>
+            
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-white mb-2">Prestataire</label>
+                <input
+                  type="text"
+                  value={prestataire}
+                  onChange={(e) => {
+                    setPrestataire(e.target.value);
+                    saveData();
+                  }}
+                  className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700 focus:border-yellow-400 focus:outline-none"
+                  placeholder="Nom du prestataire"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-white mb-2">Équipe</label>
+                <input
+                  type="text"
+                  value={equipe}
+                  onChange={(e) => {
+                    setEquipe(e.target.value);
+                    saveData();
+                  }}
+                  className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700 focus:border-yellow-400 focus:outline-none"
+                  placeholder="Nom de l'équipe"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-white mb-2">Logo Prestataire</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setLogoPrestataire(ev.target.result);
+                        saveData();
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-white mb-2">Logo Équipe (optionnel)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setLogoEquipe(ev.target.result);
+                        saveData();
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700"
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-gray-700 pt-4">
+              <label className="block text-white mb-2 font-semibold">Importer tableau Excel/Image</label>
+              <input
+                type="file"
+                accept="image/*,.xlsx,.csv"
+                onChange={handleFileUpload}
+                className="w-full px-4 py-3 bg-yellow-400 text-black font-semibold rounded-lg cursor-pointer hover:bg-yellow-300"
+              />
+              <p className="text-gray-400 text-sm mt-2">Formats acceptés: Images (OCR), Excel, CSV</p>
+            </div>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Rechercher un client..."
+              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:border-yellow-400 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredClients.map(client => (
+            <div
+              key={client.id}
+              onClick={() => setSelectedClient(client)}
+              className="bg-gray-800 rounded-xl p-4 border-2 border-gray-700 hover:border-yellow-400 cursor-pointer transition-all"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-bold text-white text-lg">{client.nom}</h3>
+                {client.connexionOK ? (
+                  <Check className="text-green-400" size={24} />
+                ) : (
+                  <AlertCircle className="text-orange-400" size={24} />
+                )}
+              </div>
+              
+              <div className="space-y-1 text-sm">
+                <p className="text-gray-400">📞 {client.contactClient}</p>
+                <p className="text-gray-400">📍 {client.ville} - {client.quartier}</p>
+                <p className="text-yellow-400 font-semibold">{client.numeroFTTH}</p>
+                <p className="text-gray-300">{client.forfait}</p>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-gray-700">
+                <div className="flex items-center justify-between text-xs">
+                  <span className={`px-2 py-1 rounded ${
+                    client.configuration === 'ok' ? 'bg-green-900 text-green-300' :
+                    client.configuration === 'nok' ? 'bg-red-900 text-red-300' :
+                    'bg-yellow-900 text-yellow-300'
+                  }`}>
+                    {client.configuration}
+                  </span>
+                  <span className="text-gray-400">
+                    {new Date(client.dateInstallation).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selectedClient && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-gray-800 rounded-xl p-6 max-w-4xl w-full border-2 border-yellow-400 my-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-yellow-400">{selectedClient.nom}</h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => deleteClient(selectedClient.id)}
+                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedClient(null)}
+                    className="p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-yellow-400 mb-2 font-semibold">Connexion OK</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => updateClient(selectedClient.id, { 
+                          connexionOK: true,
+                          dateConnexionOK: new Date().toISOString()
+                        })}
+                        className={`flex-1 py-2 rounded-lg font-semibold ${
+                          selectedClient.connexionOK 
+                            ? 'bg-green-600 text-white' 
+                            : 'bg-gray-700 text-gray-400'
+                        }`}
+                      >
+                        OUI
+                      </button>
+                      <button
+                        onClick={() => updateClient(selectedClient.id, { 
+                          connexionOK: false,
+                          connexionNOK: true 
+                        })}
+                        className={`flex-1 py-2 rounded-lg font-semibold ${
+                          selectedClient.connexionNOK 
+                            ? 'bg-red-600 text-white' 
+                            : 'bg-gray-700 text-gray-400'
+                        }`}
+                      >
+                        NON
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-yellow-400 mb-2 font-semibold">Mot de passe config</label>
+                    <input
+                      type="text"
+                      value={selectedClient.motDePasseConfig}
+                      onChange={(e) => updateClient(selectedClient.id, { motDePasseConfig: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700 focus:border-yellow-400 focus:outline-none"
+                      placeholder="Tous caractères acceptés"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-yellow-400 mb-2 font-semibold">Configuration</label>
+                    <select
+                      value={selectedClient.configuration}
+                      onChange={(e) => updateClient(selectedClient.id, { configuration: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700 focus:border-yellow-400 focus:outline-none"
+                    >
+                      <option value="en cours">En cours</option>
+                      <option value="ok">OK</option>
+                      <option value="nok">NOK</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-yellow-400 mb-2 font-semibold">Poteau implanté</label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedClient.poteauImplante}
+                          onChange={(e) => updateClient(selectedClient.id, { poteauImplante: e.target.checked })}
+                          className="w-5 h-5"
+                        />
+                        <span className="text-white">Oui</span>
+                      </label>
+                      
+                      {selectedClient.poteauImplante && (
+                        <input
+                          type="number"
+                          value={selectedClient.nombrePoteaux}
+                          onChange={(e) => updateClient(selectedClient.id, { nombrePoteaux: parseInt(e.target.value) })}
+                          placeholder="Nombre"
+                          className="w-20 px-3 py-1 bg-gray-900 text-white rounded-lg border border-gray-700"
+                          min="0"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-yellow-400 mb-2 font-semibold">Photo du problème</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(selectedClient.id, 'photoPb', e.target.files[0])}
+                      className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700"
+                    />
+                    {selectedClient.photoPb && (
+                      <img src={selectedClient.photoPb} alt="Pb" className="mt-2 w-full h-40 object-cover rounded-lg" />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-yellow-400 mb-2 font-semibold">Photo ONT (arrière)</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(selectedClient.id, 'photoONT', e.target.files[0])}
+                      className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700"
+                    />
+                    {selectedClient.photoONT && (
+                      <img src={selectedClient.photoONT} alt="ONT" className="mt-2 w-full h-40 object-cover rounded-lg" />
+                    )}
+                  </div>
+
+                  {selectedClient.poteauImplante && (
+                    <div>
+                      <label className="block text-yellow-400 mb-2 font-semibold">Photos poteaux</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          files.forEach(file => {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const newImages = [...(selectedClient.imagesPoteaux || []), ev.target.result];
+                              updateClient(selectedClient.id, { imagesPoteaux: newImages });
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                        }}
+                        className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700"
+                      />
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {selectedClient.imagesPoteaux?.map((img, idx) => (
+                          <img key={idx} src={img} alt={`Poteau ${idx+1}`} className="w-full h-24 object-cover rounded-lg" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-gray-700 grid md:grid-cols-2 gap-4 text-sm">
+                <div className="text-gray-400">
+                  <span className="font-semibold text-yellow-400">Date installation:</span> {new Date(selectedClient.dateInstallation).toLocaleString()}
+                </div>
+                {selectedClient.dateConnexionOK && (
+                  <div className="text-gray-400">
+                    <span className="font-semibold text-green-400">Date connexion OK:</span> {new Date(selectedClient.dateConnexionOK).toLocaleString()}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <footer className="bg-black border-t-2 border-yellow-400 py-4 mt-12">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-gray-400 text-sm">
+            by <span className="text-yellow-400 font-bold">Nylockdev</span> © {new Date().getFullYear()} - Tous droits réservés
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default FTTHManager;
+EOF
+
+# Modifier src/main.jsx
+cat > src/main.jsx << 'EOF'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+import './storage.js'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+EOF
+
+# Créer README personnalisé
+cat > README.md << 'EOF'
+# 🚀 FTTH Manager Pro
+
+Application de gestion des installations FTTH avec scan OCR, statistiques et exports.
+
+## ✨ Fonctionnalités
+
+- 📊 Import de tableaux Excel/Images avec OCR
+- 👥 Gestion complète des clients
+- 📈 Statistiques journalières et hebdomadaires
+- 💾 Stockage persistant
+- 📤 Export CSV/Excel
+- 📸 Gestion des photos (problèmes, ONT, poteaux)
+- 🎨 Thème MTN CI (noir et jaune)
+
+## 🚀 Installation
+
+```bash
+npm install
+npm run dev
+```
+
+## 📦 Build
+
+```bash
+npm run build
+```
+
+## 👨‍💻 By Nylockdev
+
+Tous droits réservés © 2024
+EOF
+
+echo ""
+echo "✅ Installation terminée !"
+echo ""
+echo "📁 Dossier créé: ftth-manager/"
+echo ""
+echo "🎯 Prochaines étapes:"
+echo "   cd ftth-manager"
+echo "   npm run dev"
+echo ""
+echo "🌐 L'application sera disponible sur: http://localhost:5173"
+echo ""
+echo "🎨 Thème: MTN CI (Noir & Jaune)"
+echo "👨‍💻 By: Nylockdev"
+echo ""
+echo "✨ Bon développement !"

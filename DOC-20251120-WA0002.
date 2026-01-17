@@ -1,0 +1,386 @@
+import customtkinter as ctk
+import pandas as pd
+import re
+from datetime import datetime
+import tkinter.messagebox as messagebox
+from tkinter import filedialog
+import os
+
+# Configuration de l'apparence
+ctk.set_appearance_mode("Dark")
+ctk.set_default_color_theme("blue")
+
+class FTTHDatabaseGenerator:
+    def __init__(self):
+        self.window = ctk.CTk()
+        self.window.title("Générateur BD Clients FTTH - MG Telecom")
+        self.window.geometry("900x700")
+        
+        # Variables
+        self.whatsapp_text = ""
+        self.clients_data = []
+        
+        self.setup_ui()
+    
+    def setup_ui(self):
+        # Titre principal
+        title_label = ctk.CTkLabel(
+            self.window, 
+            text="📊 GÉNÉRATEUR DE BASE DE DONNÉES CLIENTS FTTH",
+            font=ctk.CTkFont(size=20, weight="bold")
+        )
+        title_label.pack(pady=20)
+        
+        # Frame pour l'import
+        import_frame = ctk.CTkFrame(self.window)
+        import_frame.pack(pady=10, padx=20, fill="x")
+        
+        ctk.CTkLabel(
+            import_frame, 
+            text="1. Importez votre fichier WhatsApp (.txt) ou collez le texte ci-dessous:",
+            font=ctk.CTkFont(size=14, weight="bold")
+        ).pack(pady=10)
+        
+        # Boutons d'import
+        button_frame = ctk.CTkFrame(import_frame)
+        button_frame.pack(pady=5)
+        
+        ctk.CTkButton(
+            button_frame, 
+            text="📁 Importer Fichier TXT", 
+            command=self.import_txt_file
+        ).pack(side="left", padx=5)
+        
+        ctk.CTkButton(
+            button_frame, 
+            text="📋 Coller depuis Presse-papier", 
+            command=self.paste_from_clipboard
+        ).pack(side="left", padx=5)
+        
+        # Zone de texte pour WhatsApp
+        self.text_area = ctk.CTkTextbox(
+            self.window, 
+            height=200,
+            font=ctk.CTkFont(family="Consolas", size=12)
+        )
+        self.text_area.pack(pady=10, padx=20, fill="both", expand=True)
+        
+        # Boutons d'action
+        action_frame = ctk.CTkFrame(self.window)
+        action_frame.pack(pady=10)
+        
+        ctk.CTkButton(
+            action_frame, 
+            text="🔍 Extraire les Clients", 
+            command=self.extract_clients,
+            fg_color="green",
+            hover_color="darkgreen"
+        ).pack(side="left", padx=5)
+        
+        ctk.CTkButton(
+            action_frame, 
+            text="💾 Générer Excel", 
+            command=self.generate_excel,
+            fg_color="blue",
+            hover_color="darkblue"
+        ).pack(side="left", padx=5)
+        
+        ctk.CTkButton(
+            action_frame, 
+            text="🔄 Tout Effacer", 
+            command=self.clear_all,
+            fg_color="red",
+            hover_color="darkred"
+        ).pack(side="left", padx=5)
+        
+        # Frame pour les statistiques
+        stats_frame = ctk.CTkFrame(self.window)
+        stats_frame.pack(pady=10, padx=20, fill="x")
+        
+        self.stats_label = ctk.CTkLabel(
+            stats_frame, 
+            text="📈 Statistiques: Aucune donnée extraite",
+            font=ctk.CTkFont(size=12)
+        )
+        self.stats_label.pack(pady=10)
+        
+        # Tableau des résultats
+        self.results_frame = ctk.CTkScrollableFrame(self.window, height=200)
+        self.results_frame.pack(pady=10, padx=20, fill="both", expand=True)
+        
+        # Status bar
+        self.status_label = ctk.CTkLabel(
+            self.window, 
+            text="👋 Prêt à importer les données WhatsApp...",
+            font=ctk.CTkFont(size=10)
+        )
+        self.status_label.pack(pady=5)
+    
+    def import_txt_file(self):
+        file_path = filedialog.askopenfilename(
+            title="Sélectionner le fichier WhatsApp",
+            filetypes=[("Fichiers texte", "*.txt"), ("Tous les fichiers", "*.*")]
+        )
+        
+        if file_path:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    self.text_area.delete("1.0", "end")
+                    self.text_area.insert("1.0", content)
+                    self.status_label.configure(text=f"✅ Fichier importé: {os.path.basename(file_path)}")
+            except Exception as e:
+                messagebox.showerror("Erreur", f"Impossible de lire le fichier: {str(e)}")
+    
+    def paste_from_clipboard(self):
+        try:
+            clipboard_content = self.window.clipboard_get()
+            self.text_area.delete("1.0", "end")
+            self.text_area.insert("1.0", clipboard_content)
+            self.status_label.configure(text="✅ Texte collé depuis le presse-papier")
+        except:
+            messagebox.showwarning("Attention", "Aucun texte trouvé dans le presse-papier")
+    
+    def extract_clients(self):
+        whatsapp_text = self.text_area.get("1.0", "end")
+        
+        if not whatsapp_text.strip():
+            messagebox.showwarning("Attention", "Veuillez d'abord importer ou coller le texte WhatsApp")
+            return
+        
+        self.clients_data = self.parse_whatsapp_conversation(whatsapp_text)
+        self.display_results()
+        
+        # Mettre à jour les statistiques
+        total_clients = len(self.clients_data)
+        clients_avec_connexion = len([c for c in self.clients_data if c.get('statut_connexion') == 'OK'])
+        
+        stats_text = f"📈 Statistiques: {total_clients} clients trouvés | {clients_avec_connexion} avec connexion OK"
+        self.stats_label.configure(text=stats_text)
+        self.status_label.configure(text=f"✅ {total_clients} clients extraits avec succès")
+    
+    def parse_whatsapp_conversation(self, text):
+        clients = []
+        lines = text.split('\n')
+        
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            
+            # Détecter le début d'une étude client
+            if "Étude" in line and "Client" in lines[i+1] if i+1 < len(lines) else False:
+                client_data = {}
+                
+                # Extraire les informations de base
+                for j in range(i, min(i+20, len(lines))):
+                    current_line = lines[j]
+                    
+                    # Nom du client
+                    if "Client :" in current_line:
+                        client_data['nom'] = current_line.split("Client :")[1].strip()
+                    
+                    # Numéro
+                    elif "Numéro joignable:" in current_line:
+                        client_data['telephone'] = current_line.split("Numéro joignable:")[1].strip()
+                    
+                    # TN
+                    elif "TN:" in current_line:
+                        client_data['tn'] = current_line.split("TN:")[1].strip()
+                    
+                    # Forfait
+                    elif "Forfait:" in current_line:
+                        client_data['forfait'] = current_line.split("Forfait:")[1].strip()
+                    
+                    # Zone
+                    elif "SAN PEDRO," in current_line:
+                        client_data['zone'] = current_line.split("SAN PEDRO,")[1].strip()
+                    
+                    # Matériel
+                    elif "Câble :" in current_line:
+                        client_data['cable'] = current_line.split("Câble :")[1].strip()
+                    
+                    # Détecter la fin de l'étude
+                    elif "Demande d'activation" in current_line:
+                        client_data['statut_activation'] = 'En attente'
+                        break
+                
+                # Chercher le statut final plus loin dans la conversation
+                for j in range(i, min(i+50, len(lines))):
+                    current_line = lines[j]
+                    
+                    if "CONNEXION ok" in current_line.upper():
+                        client_data['statut_connexion'] = 'OK'
+                        client_data['statut_activation'] = 'Activé'
+                        break
+                    elif "CONNEXION nok" in current_line.upper():
+                        client_data['statut_connexion'] = 'NOK'
+                        client_data['statut_activation'] = 'Problème'
+                
+                # Ajouter la date d'extraction
+                client_data['date_extraction'] = datetime.now().strftime("%d/%m/%Y")
+                
+                if client_data.get('nom'):
+                    clients.append(client_data)
+                
+                i = j  # Avancer l'index
+            i += 1
+        
+        return clients
+    
+    def display_results(self):
+        # Nettoyer le frame des résultats
+        for widget in self.results_frame.winfo_children():
+            widget.destroy()
+        
+        # En-têtes du tableau
+        headers = ["Nom", "Téléphone", "TN", "Forfait", "Zone", "Statut", "Câble"]
+        for col, header in enumerate(headers):
+            label = ctk.CTkLabel(
+                self.results_frame,
+                text=header,
+                font=ctk.CTkFont(weight="bold"),
+                width=120
+            )
+            label.grid(row=0, column=col, padx=2, pady=2, sticky="ew")
+        
+        # Données des clients
+        for row, client in enumerate(self.clients_data, 1):
+            # Nom
+            ctk.CTkLabel(
+                self.results_frame,
+                text=client.get('nom', 'N/A'),
+                width=120
+            ).grid(row=row, column=0, padx=2, pady=1)
+            
+            # Téléphone
+            ctk.CTkLabel(
+                self.results_frame,
+                text=client.get('telephone', 'N/A'),
+                width=120
+            ).grid(row=row, column=1, padx=2, pady=1)
+            
+            # TN
+            ctk.CTkLabel(
+                self.results_frame,
+                text=client.get('tn', 'N/A')[:15] + "..." if client.get('tn') and len(client.get('tn')) > 15 else client.get('tn', 'N/A'),
+                width=120
+            ).grid(row=row, column=2, padx=2, pady=1)
+            
+            # Forfait
+            ctk.CTkLabel(
+                self.results_frame,
+                text=client.get('forfait', 'N/A'),
+                width=120
+            ).grid(row=row, column=3, padx=2, pady=1)
+            
+            # Zone
+            ctk.CTkLabel(
+                self.results_frame,
+                text=client.get('zone', 'N/A'),
+                width=120
+            ).grid(row=row, column=4, padx=2, pady=1)
+            
+            # Statut
+            statut = client.get('statut_connexion', 'Inconnu')
+            color = "green" if statut == "OK" else "red" if statut == "NOK" else "orange"
+            ctk.CTkLabel(
+                self.results_frame,
+                text=statut,
+                text_color=color,
+                width=120
+            ).grid(row=row, column=5, padx=2, pady=1)
+            
+            # Câble
+            ctk.CTkLabel(
+                self.results_frame,
+                text=client.get('cable', 'N/A'),
+                width=120
+            ).grid(row=row, column=6, padx=2, pady=1)
+        
+        # Configurer le poids des colonnes
+        for col in range(7):
+            self.results_frame.grid_columnconfigure(col, weight=1)
+    
+    def generate_excel(self):
+        if not self.clients_data:
+            messagebox.showwarning("Attention", "Aucune donnée client à exporter. Veuillez d'abord extraire les clients.")
+            return
+        
+        file_path = filedialog.asksaveasfilename(
+            title="Enregistrer le fichier Excel",
+            defaultextension=".xlsx",
+            filetypes=[("Fichiers Excel", "*.xlsx"), ("Tous les fichiers", "*.*")]
+        )
+        
+        if file_path:
+            try:
+                # Créer un DataFrame pandas
+                df = pd.DataFrame(self.clients_data)
+                
+                # Réorganiser les colonnes
+                columns_order = ['nom', 'telephone', 'tn', 'forfait', 'zone', 'cable', 
+                               'statut_activation', 'statut_connexion', 'date_extraction']
+                
+                # Garder seulement les colonnes existantes
+                existing_columns = [col for col in columns_order if col in df.columns]
+                df = df[existing_columns]
+                
+                # Renommer les colonnes en français
+                column_names = {
+                    'nom': 'Nom Client',
+                    'telephone': 'Téléphone',
+                    'tn': 'TN',
+                    'forfait': 'Forfait',
+                    'zone': 'Zone',
+                    'cable': 'Câble Utilisé',
+                    'statut_activation': 'Statut Activation',
+                    'statut_connexion': 'Statut Connexion',
+                    'date_extraction': 'Date Extraction'
+                }
+                df.rename(columns=column_names, inplace=True)
+                
+                # Exporter vers Excel
+                with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+                    df.to_excel(writer, sheet_name='Clients_FTTH', index=False)
+                    
+                    # Accéder au workbook et worksheet pour la mise en forme
+                    workbook = writer.book
+                    worksheet = writer.sheets['Clients_FTTH']
+                    
+                    # Ajuster la largeur des colonnes
+                    for column in worksheet.columns:
+                        max_length = 0
+                        column_letter = column[0].column_letter
+                        for cell in column:
+                            try:
+                                if len(str(cell.value)) > max_length:
+                                    max_length = len(str(cell.value))
+                            except:
+                                pass
+                        adjusted_width = min(max_length + 2, 50)
+                        worksheet.column_dimensions[column_letter].width = adjusted_width
+                
+                messagebox.showinfo("Succès", f"✅ Fichier Excel généré avec succès!\n\n📍 {file_path}\n📊 {len(self.clients_data)} clients exportés")
+                self.status_label.configure(text=f"✅ Excel généré: {os.path.basename(file_path)}")
+                
+            except Exception as e:
+                messagebox.showerror("Erreur", f"Erreur lors de la génération Excel: {str(e)}")
+    
+    def clear_all(self):
+        self.text_area.delete("1.0", "end")
+        self.clients_data = []
+        
+        # Nettoyer le frame des résultats
+        for widget in self.results_frame.winfo_children():
+            widget.destroy()
+        
+        self.stats_label.configure(text="📈 Statistiques: Aucune donnée extraite")
+        self.status_label.configure(text="🧹 Toutes les données ont été effacées")
+    
+    def run(self):
+        self.window.mainloop()
+
+# Lancement de l'application
+if __name__ == "__main__":
+    app = FTTHDatabaseGenerator()
+    app.run()  # ← CORRECTION ICI : app.run() au lieu de app.window.mainloop()
