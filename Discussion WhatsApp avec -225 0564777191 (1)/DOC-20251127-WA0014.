@@ -1,0 +1,63 @@
+from pdf2image import convert_from_path
+import os
+
+# -------------------------------------------------------------
+# CONFIGURATION
+# -------------------------------------------------------------
+pdf_file = "/data/data/com.termux/files/home/storage/shared/SAN PEDRO/FICHE INTERVENTION /STI/fiches d'intervention octobre.pdf"                          # PDF source
+output_folder = "OCTOBRE_FICHES"                  # Dossier de sortie
+list_names = [
+    "Awe rukayat",
+    "gnoleba marie France",
+    "niang Fatou samba",
+    "satchi kripe",
+    "yao golleble Esther",
+    "glan doho Christophe",
+    "oulai alexise",
+    "seka koutou",
+    "KOUAME kouassi thomas",
+    "zahui jean Philippe",
+    "sondo windepure",
+    "yao bla Audrey",
+    "aron Bogui",
+    "Traoré siriki",
+    "oulega saada",
+    "n'zi akissi",
+    "gbo Adrielle henock",
+    "dago goupe Elie",
+    "kouadio Stéphanie zongo clarisse",
+    "seyde siane",
+    "n'gbesso guy Roger",
+    "krama Zora",
+    "tere yahi",
+    "okpo djako Gabriel",
+    "toure daouda",
+    "djea esme Christelle",
+    "akon aguy patrice",
+    "n'guessan koffi Hubert"
+]# noms pour chaque page
+
+dpi_quality = 300                                  # qualité en DPI
+fmt = "jpg"                                        # format d'export
+# -------------------------------------------------------------
+
+
+# Crée le dossier s’il n’existe pas
+os.makedirs(output_folder, exist_ok=True)
+
+# Convertir PDF en images
+pages = convert_from_path(pdf_file, dpi=dpi_quality)
+
+# Vérification de la taille de la liste
+if len(list_names) < len(pages):
+    raise ValueError("La liste de noms est plus courte que le nombre de pages PDF")
+
+# Traitement page par page avec nom personnalisé
+for index, page in enumerate(pages):
+    clean_name = list_names[index].replace(" ", "_")   # Nom propre sans espace
+    filename = f"{output_folder}/{clean_name}.{fmt}"
+    page.save(filename, fmt.lower())
+    print(f"Page {index+1} → {filename}")
+
+
+print(f"\nExport terminé dans le dossier : {output_folder}")

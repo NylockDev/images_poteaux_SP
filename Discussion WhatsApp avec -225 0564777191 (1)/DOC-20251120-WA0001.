@@ -1,0 +1,39 @@
+import customtkinter as ctk
+import tkinter.messagebox as messagebox
+
+# Configuration de base
+ctk.set_appearance_mode("Dark")
+ctk.set_default_color_theme("blue")
+
+class SimpleFTTHApp:
+    def __init__(self):
+        self.window = ctk.CTk()
+        self.window.title("FTTH Generator - TEST")
+        self.window.geometry("600x400")
+        
+        # Interface simple
+        title = ctk.CTkLabel(self.window, text="🎯 Générateur BD FTTH", font=("Arial", 20))
+        title.pack(pady=20)
+        
+        button = ctk.CTkButton(
+            self.window, 
+            text="Cliquez-moi !", 
+            command=self.test_function
+        )
+        button.pack(pady=10)
+        
+        self.status = ctk.CTkLabel(self.window, text="Status: Prêt")
+        self.status.pack(pady=10)
+    
+    def test_function(self):
+        messagebox.showinfo("Test", "L'application fonctionne ! 🎉")
+        self.status.configure(text="Status: Test réussi !")
+    
+    def run(self):
+        self.window.mainloop()
+
+# Lancement
+if __name__ == "__main__":
+    print("Démarrage de l'application...")
+    app = SimpleFTTHApp()
+    app.run()

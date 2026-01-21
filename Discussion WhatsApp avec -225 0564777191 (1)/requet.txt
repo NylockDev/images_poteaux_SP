@@ -1,0 +1,38 @@
+
+
+import requests, json
+
+url = "https://fibre.mtn.ci/mtn-ftth-api/commerciale/rendezvous/rechercher-rdv-par-typerdv-par-statutabonnement"
+
+params = {
+    "page": 0,
+    "param": "",
+    "size": 8,
+    "dateDebut": "",
+    "dateFin": "",
+    "statutAbonnement": "EN_ATTENTE_DE_SURVEY",
+    "statutPriseEnCharge": "",
+    "resultat": "",
+    "typeRdv": "SURVEY",
+    "inTime": ""
+}
+
+headers = {
+    "Accept": "application/json, text/plain, */*",
+    "Authorization": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI2NDkzIiwibnVtZXJvIjoiMDU2NDc3NzE5MSIsIm5vbVByZW5vbXMiOiJBRE9VIEtPVUFESU8gVE9VU1NBSU5UIiwicm9sZXMiOlsiUk9MRV9URUNITklDSUVOIl0sImV4cCI6MTc2NTI4MDA4MSwiaWF0IjoxNzY0Njc1MjgxLCJlbWFpbCI6ImFkb3V0b3Vzc2FpbnQ1QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiQWRvdS5Lb3VhZGlvIn0.RlQ6RGn3QSYE4fW8Jmlaf7jKVRpuU0MPW-kSRcdUHHTo_SLW3JzN_M1NTQsh_Vnd3mGb8vsevwRhB-fILCDudQ"
+
+,
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "X-Nonce": "miortti48nzrglu3o1a",
+    "X-Timestamp": "2025-12-02T16:07:01.276Z",
+}
+
+response = requests.get(url, params=params, headers=headers)
+
+print("Code HTTP :", response.status_code)
+#print("Données :", response.text)
+
+with open("response.json","w",encoding="utf-8") as f:
+	json.dump(response.json(), f, indent=4, ensure_ascii=False) 
+	
+
