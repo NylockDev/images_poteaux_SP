@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp - updatemsg.txt</title>
+    <title>WhatsApp - Images des Poteaux San Pedro</title>
     <style>
         * {
             margin: 0;
@@ -21,7 +21,7 @@
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -57,6 +57,125 @@
             font-size: 15px;
         }
         
+        /* Styles pour les cartes d'images */
+        .image-card {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .image-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .image-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .image-name {
+            font-weight: 600;
+            color: #333;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            display: block;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .image-preview img:hover {
+            transform: scale(1.02);
+        }
+        
+        .image-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.85em;
+        }
+        
+        .open-full {
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background: #e7f3ff;
+            transition: background 0.2s;
+        }
+        
+        .open-full:hover {
+            background: #d0e7ff;
+            text-decoration: none;
+        }
+        
+        .image-size {
+            color: #666;
+            font-family: monospace;
+        }
+        
+        /* Modal pour les images en grand */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        /* Styles existants */
         .message-line {
             margin-bottom: 15px;
             padding: 12px;
@@ -105,26 +224,6 @@
             box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
         }
         
-        .media-link {
-            display: inline-block;
-            color: white;
-            text-decoration: none;
-            padding: 10px 18px;
-            margin: 10px 0;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s;
-            border: none;
-            box-shadow: 0 3px 8px rgba(245, 158, 11, 0.2);
-        }
-        
-        .media-link:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 12px rgba(245, 158, 11, 0.3);
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        }
-        
         .location {
             color: #7c3aed;
             font-weight: 600;
@@ -155,41 +254,21 @@
             display: inline-block;
         }
         
-        /* Barre de défilement */
-        .content::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        .content::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-        
-        .content::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
+        /* Responsive */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
+            .image-card {
+                margin: 15px 0;
+                padding: 12px;
             }
             
-            .container {
-                border-radius: 8px;
+            .image-preview img {
+                max-height: 200px;
             }
             
-            .content {
-                padding: 15px;
-                font-size: 14px;
-            }
-            
-            .header h1 {
-                font-size: 1.4em;
+            .image-footer {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
             }
         }
     </style>
@@ -198,849 +277,1560 @@
     <div class="container">
         <div class="header">
             <h1>📱 poteaux implantés San Pedro</h1>
-            <p style="opacity: 0.9; font-size: 0.95em;">updatemsg.txt</p>
+            <p style="opacity: 0.9; font-size: 0.95em;">Version avec images intégrées</p>
         </div>
         
         <div class="stats">
-            📊 196 fichiers médias(POTEAUX) • 49 clients
+            📊 Images intégrées directement dans la page
         </div>
         
         <div class="content">
-            12/01/2026, 16:50 - Adou: ‎<a href="IMG-20251112-WA0225.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0225.jpg</a> (fichier joint)<br>
-12/01/2026, 16:51 - Adou: Yao n'guessan <br>
-0505965353<br>
-TN 2536078962<br>
-<br>
-1 poteau<br>
-12/01/2026, 16:55 - Adou: <br>
-12/01/2026, 16:55 - Adou: ‎<a href="IMG-20251113-WA0379.jpg" class="media-link" target="_blank">📎 IMG-20251113-WA0379.jpg</a> (fichier joint)<br>
-12/01/2026, 16:55 - Adou: <span class="client-name">Client : ZIAN GONDO GUY</span><br>
-Numéro joignable: 0546539646<br>
-TN: 2536069117@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, lac pave <br>
-<br>
-1 poteau<br>
-12/01/2026, 16:56 - Adou: ‎<a href="IMG-20251112-WA0059.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0059.jpg</a> (fichier joint)<br>
-12/01/2026, 16:56 - Adou: <span class="client-name">Client : TANO BADJO RACHEL RUTH</span><br>
-Numéro joignable: 0596450760<br>
-TN: 2536069355<br>
-@mtn.ci<br>
- 1 poteau <Ce message a été modifié><br>
-12/01/2026, 16:58 - Adou: ‎<a href="IMG-20251114-WA0381.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0381.jpg</a> (fichier joint)<br>
-12/01/2026, 16:58 - Adou: <span class="client-name">Client : gohou dago pierre</span><br>
-Numéro joignable: 0586828288<br>
-TN: 2536068996@mtn.ci<br>
-SAN PEDRO, jul fery<br>
-13/01/2026, 05:00 - Adou: ‎<a href="IMG-20251115-WA0247.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0247.jpg</a> (fichier joint)<br>
-13/01/2026, 05:00 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : boue ponnin eleonore</span><br>
-Numéro joignable: 0508670266<br>
-TN: 2536068761@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, <br>
-<br>
-1 poteau<br>
-image 👆👆👆👆 <Ce message a été modifié><br>
-13/01/2026, 05:01 - Adou: ‎<a href="IMG-20251115-WA0245.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0245.jpg</a> (fichier joint)<br>
-13/01/2026, 05:01 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : GAHA DJIE JEAN LUC</span><br>
-Numéro joignable: 0566052381<br>
-TN: 2536079824@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO,  francophonie <br>
-<br>
-1 poteau <Ce message a été modifié><br>
-13/01/2026, 05:02 - Adou: <br>
-13/01/2026, 05:02 - Adou: ‎<a href="IMG-20251115-WA0242.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0242.jpg</a> (fichier joint)<br>
-13/01/2026, 05:02 - Adou: ‎<a href="IMG-20251115-WA0243.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0243.jpg</a> (fichier joint)<br>
-13/01/2026, 05:02 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : BAKARI KOSSIA MANDJALA</span><br>
-Numéro joignable: 0508670280<br>
-TN: 2536067405@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO,  lac classic<br>
-<br>
-2 poteaux <br>
-<br>
-👆👆👆<br>
-13/01/2026, 05:03 - Adou: ‎<a href="IMG-20251115-WA0005.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0005.jpg</a> (fichier joint)<br>
-13/01/2026, 05:03 - Adou: TEAM STI<br>
-<br>
-ETUDE<br>
-<br>
-<span class="client-name">CLIENT :  n'guessan koffi hubert</span><br>
-NUMERO JOINABBLE: 0576230148<br>
-FORFAIT: 10.000F<br>
-TN: 2536068146<br>
-SAN PEDRO jul fery <br>
-<br>
-* 1 poteau <br>
-* 👆👆👆 <Ce message a été modifié><br>
-13/01/2026, 05:04 - Adou: ‎<a href="IMG-20251118-WA0083.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0083.jpg</a> (fichier joint)<br>
-13/01/2026, 05:04 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : FLORA CARINE BOTTI</span><br>
-Numéro joignable: 0505920116<br>
-TN: 2536068867<br>
-@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO,  cité bahia<br>
-<br>
-1 poteau <br>
-Image☝🏼☝🏼☝🏼☝🏼<br>
-13/01/2026, 05:05 - Adou: ‎<a href="IMG-20251119-WA0338.jpg" class="media-link" target="_blank">📎 IMG-20251119-WA0338.jpg</a> (fichier joint)<br>
-13/01/2026, 05:06 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: DAGO TANHO SEVERIN</span><br>
-Numéro joignable: 054850273<br>
-TN: 2536041655@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO,  jul fery<br>
-<br>
-1 poteau <br>
-<br>
-👆👆👆<br>
-13/01/2026, 05:06 - Adou: ‎<a href="IMG-20251119-WA0372.jpg" class="media-link" target="_blank">📎 IMG-20251119-WA0372.jpg</a> (fichier joint)<br>
-13/01/2026, 05:06 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : ouattara mikitta bignon</span><br>
-Numéro joignable: 0596845655<br>
-TN: 2536068636@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO,  nitoro château <br>
-<br>
-1 poteau <br>
-,👆👆👆👆<br>
-13/01/2026, 05:08 - Adou: ‎<a href="IMG-20251120-WA0326.jpg" class="media-link" target="_blank">📎 IMG-20251120-WA0326.jpg</a> (fichier joint)<br>
-13/01/2026, 05:08 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : tra bi zinla bertin </span><br>
-Numéro joignable: 0759262579<br>
-TN: 2536079260@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, nitoro <br>
-<br>
-1 poteau <br>
-<br>
-👆👆👆 <Ce message a été modifié><br>
-13/01/2026, 05:11 - Adou: ‎<a href="IMG-20251122-WA0237.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0237.jpg</a> (fichier joint)<br>
-13/01/2026, 05:12 - Adou: <br>
-13/01/2026, 05:12 - Adou: ‎<a href="IMG-20251122-WA0232.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0232.jpg</a> (fichier joint)<br>
-13/01/2026, 05:12 - Adou: ‎<a href="IMG-20251122-WA0234.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0234.jpg</a> (fichier joint)<br>
-13/01/2026, 05:12 - Adou: ‎<a href="IMG-20251122-WA0233.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0233.jpg</a> (fichier joint)<br>
-13/01/2026, 05:13 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : N'GUESSAN KOUASSI FRANCK ANI </span><br>
-Numéro joignable: 0585779215<br>
-TN: 2536042132@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, cité<br>
-<br>
-*Étude*<br>
-<br>
-<span class="client-name">Client : kohon poegnon michelle</span><br>
-Numéro joignable: 0508676628<br>
-TN: 2536068089<br>
-@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO,  cité <br>
-<br>
-4 poteaux <br>
-<br>
-👆👆<br>
-13/01/2026, 05:14 - Adou: ‎<a href="IMG-20251125-WA0278.jpg" class="media-link" target="_blank">📎 IMG-20251125-WA0278.jpg</a> (fichier joint)<br>
-13/01/2026, 05:14 - Adou: ‎<a href="IMG-20251125-WA0279.jpg" class="media-link" target="_blank">📎 IMG-20251125-WA0279.jpg</a> (fichier joint)<br>
-13/01/2026, 05:15 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : WADJA AMOUA OLGA</span><br>
-<br>
-Numéro joignable: 0707986838<br>
-TN: 2536043089@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, lac pave<br>
-<br>
-2 poteaux <br>
-<br>
-👆👆👆👆<br>
-13/01/2026, 05:15 - Adou: <br>
-13/01/2026, 05:15 - Adou: ‎<a href="IMG-20251126-WA0226.jpg" class="media-link" target="_blank">📎 IMG-20251126-WA0226.jpg</a> (fichier joint)<br>
-13/01/2026, 05:15 - Adou: ‎<a href="IMG-20251126-WA0227.jpg" class="media-link" target="_blank">📎 IMG-20251126-WA0227.jpg</a> (fichier joint)<br>
-13/01/2026, 05:16 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : KOFFI BOAMI MARTIN</span><br>
-<br>
-Numéro joignable: 0505462140<br>
-TN: 2536042080@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, nitoro <br>
-<br>
-2 poteaux <br>
-<br>
-👆👆👆👆👆<br>
-13/01/2026, 05:16 - Adou: ‎<a href="IMG-20251127-WA0220.jpg" class="media-link" target="_blank">📎 IMG-20251127-WA0220.jpg</a> (fichier joint)<br>
-13/01/2026, 05:17 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : TENIN ZEAN HYACINTH </span><br>
-<br>
-Numéro joignable: 0501296677<br>
-TN: 2536068331@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, FRANCOPHONIE<br>
-<br>
-1 poteau <br>
-👆👆👆<br>
-13/01/2026, 05:26 - Adou: ‎<a href="IMG-20251204-WA0110.jpg" class="media-link" target="_blank">📎 IMG-20251204-WA0110.jpg</a> (fichier joint)<br>
-13/01/2026, 05:26 - Adou: ‎<a href="IMG-20251204-WA0111.jpg" class="media-link" target="_blank">📎 IMG-20251204-WA0111.jpg</a> (fichier joint)<br>
-13/01/2026, 05:26 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : YAO AKOUBA PATRICIA </span><br>
-<br>
-Numéro joignable: 0585047420<br>
-TN: 2536047018@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, LAC FRANCOPHONIE <br>
-<br>
-2 poteaux <br>
-<br>
-👆👆👆 <Ce message a été modifié><br>
-13/01/2026, 05:31 - Adou: ‎<a href="IMG-20251213-WA0004.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0004.jpg</a> (fichier joint)<br>
-13/01/2026, 05:31 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : YOUKOU MILANWOIN</span><br>
-<br>
-Numéro joignable: 0708387314<br>
-TN: 2536045301@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, nitoro<br>
-<br>
-1 poteau <br>
-👆👆👆👆<br>
-13/01/2026, 05:34 - Adou: ‎<a href="IMG-20251216-WA0144.jpg" class="media-link" target="_blank">📎 IMG-20251216-WA0144.jpg</a> (fichier joint)<br>
-ZADI HONNON ALICE GOZE PLANTATION D'UN POTEAU<br>
-13/01/2026, 05:35 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : zadi honnon Alice goze</span><br>
-<br>
-Numéro joignable: 0140947108<br>
-TN: 2536048510@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, NITORO <br>
-<br>
-1 poteau 👆👆👆👆👆<br>
-13/01/2026, 05:38 - Adou: <br>
-13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0187.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0187.jpg</a> (fichier joint)<br>
-13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0188.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0188.jpg</a> (fichier joint)<br>
-13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0189.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0189.jpg</a> (fichier joint)<br>
-13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0190.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0190.jpg</a> (fichier joint)<br>
-13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0191.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0191.jpg</a> (fichier joint)<br>
-13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0192.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0192.jpg</a> (fichier joint)<br>
-13/01/2026, 05:44 - Adou: ETUDE<br>
-<br>
-WAYE TCHROUIN<br>
-<br>
-0594932244<br>
-SAN PEDRO, BALMER DERNIER HOTEL AIBA<br>
-TN: 2536043843@mtn.ci<br>
-SN :<br>
-485754435D51E6B5<br>
-<br>
-ÉTUDE<br>
-<br>
-YOH GNOLEBA JULES DONALD<br>
-<br>
-0586943400<br>
-SAN PEDRO, BALMER DERRIERE HOTEL AYIBA<br>
-<br>
-*Étude*<br>
-<br>
-<span class="client-name">Client: KONE ABDOULAYE KLOFIE</span><br>
-Numéro joignable : +2250709128430<br>
-TN: 2536047855@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, LAC AHIBA <br>
-<br>
-       *6 poteaux*<br>
-<br>
-<br>
-👆👆👆👆👆👆👆<br>
-13/01/2026, 05:46 - Adou: <br>
-13/01/2026, 05:46 - Adou: ‎<a href="IMG-20251217-WA0069.jpg" class="media-link" target="_blank">📎 IMG-20251217-WA0069.jpg</a> (fichier joint)<br>
-13/01/2026, 05:46 - Adou: ‎<a href="IMG-20251217-WA0070.jpg" class="media-link" target="_blank">📎 IMG-20251217-WA0070.jpg</a> (fichier joint)<br>
-13/01/2026, 05:47 - Adou: <span class="client-name">Client : LATTE PATRICK</span><br>
-<br>
-Numéro joignable: 0747277742<br>
-TN: 2536050786@mtn.ci<br>
-SN: 485754435D5723B5<br>
-Forfait: 10.000f <br>
-SAN PEDRO, nitoro extension derrière l’église Assemblée de Dieu<br>
-<br>
-<br>
-NB: 2 poteaux métalliques à implanter<br>
-👆👆👆<br>
-13/01/2026, 05:52 - Adou: <br>
-13/01/2026, 05:52 - Adou: ‎<a href="IMG-20251220-WA0085.jpg" class="media-link" target="_blank">📎 IMG-20251220-WA0085.jpg</a> (fichier joint)<br>
-13/01/2026, 05:52 - Adou: ‎<a href="IMG-20251220-WA0086.jpg" class="media-link" target="_blank">📎 IMG-20251220-WA0086.jpg</a> (fichier joint)<br>
-13/01/2026, 05:53 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : ADOU AKOUA ANGE MARIE</span><br>
-<br>
-Numéro joignable: 0566959542/0749231182<br>
-TN: 2536046688@mtn.ci<br>
-<br>
-<br>
-NB: 2 poteau à Implanter<br>
-13/01/2026, 06:09 - Adou: <br>
-13/01/2026, 06:09 - Adou: ‎<a href="IMG-20260108-WA0272.jpg" class="media-link" target="_blank">📎 IMG-20260108-WA0272.jpg</a> (fichier joint)<br>
-13/01/2026, 06:09 - Adou: ‎<a href="IMG-20260108-WA0273.jpg" class="media-link" target="_blank">📎 IMG-20260108-WA0273.jpg</a> (fichier joint)<br>
-13/01/2026, 06:10 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : KOUAME FREDY</span><br>
-<br>
-Numéro joignable: 0708015627<br>
-TN: 2536040647@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, BALMER<br>
-<br>
-2 poteaux <br>
-👆👆👆<br>
-13/01/2026, 06:10 - Adou: ‎<a href="IMG-20260112-WA0169.jpg" class="media-link" target="_blank">📎 IMG-20260112-WA0169.jpg</a> (fichier joint)<br>
-13/01/2026, 06:11 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: YAO YEBOUA JONAS</span><br>
-Numéro joignable : 0747996918<br>
-TN: 2536049294@mtn.ci<br>
-SN:485754435D4E96B5<br>
-Forfait: 15.000f <br>
-  SAN PEDRO CITE, VERS LA POSTE<br>
-<br>
-1 poteau <br>
-<br>
-👆👆👆<br>
-13/01/2026, 08:44 - Adou: ‎<a href="IMG-20260113-WA0002.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0002.jpg</a> (fichier joint)<br>
-13/01/2026, 08:45 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : ALI ATIEH</span><br>
-<br>
-Numéro joignable: 0709281324<br>
-TN: 2536048785@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, NITORO<br>
-<br>
-1 poteau<br>
-13/01/2026, 15:39 - Adou: ‎<a href="IMG-20260113-WA0248.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0248.jpg</a> (fichier joint)<br>
-Poteau KONAN KOUASSIHILAIRE<br>
-13/01/2026, 15:40 - Adou: <span class="client-name">Client: KONAN KOUASSI HILAIRE</span><br>
-Numéro joignable : 0142732310/0709119198<br>
-TN: 2536048860@mtn.ci<br>
-Forfait: 10.000f <br>
-  Lac en face de la pharmacie <br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 08:27 - Adou: ‎<a href="IMG-20251201-WA0250.jpg" class="media-link" target="_blank">📎 IMG-20251201-WA0250.jpg</a> (fichier joint)<br>
-01 poteau implanté<br>
-14/01/2026, 08:28 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: AGBOHOUN GUEGUEHI MARTIAL </span><br>
-Numéro joignable : 0708151060<br>
-TN: 2536068897@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, Commissariat 1er arrondissement <br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 20:51 - Adou: ‎<a href="IMG-20260113-WA0245.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0245.jpg</a> (fichier joint)<br>
-Poteau VOH LOU  GADOUNAN<br>
-14/01/2026, 20:52 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : VOH LOU GADOUNAN BENEDICTE</span><br>
-<br>
-Numéro joignable: 0748787895<br>
-TN: 2536040449@mtn.ci<br>
-<br>
- 1 poteau 👆👆👆<br>
-14/01/2026, 20:53 - Adou: ‎<a href="IMG-20260113-WA0246.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0246.jpg</a> (fichier joint)<br>
-POTEAU  GNADOU LIDY ANNE AXELLE<br>
-14/01/2026, 20:53 - Adou: <span class="client-name">Client : GNADOU LIDY ANNE AXELLE</span><br>
-<br>
-Numéro joignable: 0594449565<br>
-TN: 2536047695@mtn.ci<br>
-<br>
-Forfait: 10.000f <br>
-SAN PEDRO, cité soccoce<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:02 - Adou: <br>
-14/01/2026, 21:02 - Adou: ‎<a href="IMG-20251202-WA0314.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0314.jpg</a> (fichier joint)<br>
-14/01/2026, 21:02 - Adou: ‎<a href="IMG-20251202-WA0317.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0317.jpg</a> (fichier joint)<br>
-14/01/2026, 21:03 - Adou: 'Nom du <span class="client-name">CLIENT : OUATTARA GNINWOYO EDITH</span><br>
-- NUMÉRO: 0508673950<br>
-- TN: *2536040885@mtn.ci*<br>
-<br>
-2 poteaux 👆👆<br>
-14/01/2026, 21:03 - Adou: <br>
-14/01/2026, 21:04 - Adou: ‎<a href="IMG-20251202-WA0315.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0315.jpg</a> (fichier joint)<br>
-14/01/2026, 21:04 - Adou: ‎<a href="IMG-20251202-WA0316.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0316.jpg</a> (fichier joint)<br>
-14/01/2026, 21:04 - Adou: 'Nom du <span class="client-name">CLIENT : SIBY ANNE CHRISTELLE </span><br>
-- NUMÉRO: 0506896454<br>
-- TN: *2536045870@mtn.ci*<br>
-2 poteaux 👆👆👆<br>
-14/01/2026, 21:07 - Adou: ‎<a href="IMG-20251112-WA0463.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0463.jpg</a> (fichier joint)<br>
-14/01/2026, 21:07 - Adou: Nom du <span class="client-name">CLIENT :ABOTOR SEWA AKO</span><br>
-<br>
-- NUMÉRO: 0748205637<br>
-- TN: *2536069352@mtn.ci*<br>
-<br>
- 1 poteau 👆👆👆👆<br>
-14/01/2026, 21:11 - Adou: ‎<a href="IMG-20251112-WA0460.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0460.jpg</a> (fichier joint)<br>
-14/01/2026, 21:12 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: ZOKOU GRAH THIERRY ROLAND </span><br>
-Numéro joignable :0708190989<br>
-TN: 2536040292@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, NITORO<br>
-<br>
-1 poteau👆👆👆<br>
-14/01/2026, 21:13 - Adou: <br>
-14/01/2026, 21:13 - Adou: ‎<a href="IMG-20251112-WA0461.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0461.jpg</a> (fichier joint)<br>
-14/01/2026, 21:13 - Adou: ‎<a href="IMG-20251112-WA0462.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0462.jpg</a> (fichier joint)<br>
-14/01/2026, 21:13 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: KOUAME RODRIGUE ARMEL YAO</span><br>
-Numéro joignable :0708631945<br>
-TN: 2536068863@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, NITORO<br>
-<br>
-2 poteaux 👆👆<br>
-14/01/2026, 21:15 - Adou: ‎<a href="IMG-20251113-WA0378.jpg" class="media-link" target="_blank">📎 IMG-20251113-WA0378.jpg</a> (fichier joint)<br>
-14/01/2026, 21:15 - Adou: Nom du <span class="client-name">CLIENT : KAWONAMAN CLINTCHO TOURE </span><br>
-<br>
-- NUMÉRO: 0709098371<br>
-- TN: *2536040198@mtn.ci*<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:17 - Adou: ‎<a href="IMG-20260114-WA0290.jpg" class="media-link" target="_blank">📎 IMG-20260114-WA0290.jpg</a> (fichier joint)<br>
-14/01/2026, 21:17 - Adou: <span class="client-name">Client: YAO CEDRIC PIERRE   EMMAN</span><br>
-Numéro joignable : 0714347579<br>
-TN: 2536079795@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, NITERO<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:20 - Adou: <br>
-14/01/2026, 21:20 - Adou: ‎<a href="IMG-20251112-WA0461.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0461.jpg</a> (fichier joint)<br>
-14/01/2026, 21:20 - Adou: ‎<a href="IMG-20251112-WA0462.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0462.jpg</a> (fichier joint)<br>
-14/01/2026, 21:20 - Adou: <span class="client-name">Client: KOUAME RODRIGUE ARMEL YAO</span><br>
-Numéro joignable :0708631945<br>
-TN: 2536068863@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, NITORO<br>
-<br>
-2 poteaux 👆👆👆<br>
-14/01/2026, 21:21 - Adou: ‎<a href="IMG-20251113-WA0378.jpg" class="media-link" target="_blank">📎 IMG-20251113-WA0378.jpg</a> (fichier joint)<br>
-14/01/2026, 21:22 - Adou: Nom du <span class="client-name">CLIENT :GUEUGUEU MIRIAM KATO </span><br>
-<br>
-- NUMÉRO: 0779301075<br>
-- TN: *2536069418@mtn.ci*<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:23 - Adou: ‎<a href="IMG-20251114-WA0391.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0391.jpg</a> (fichier joint)<br>
-14/01/2026, 21:23 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : POMBO HENRI JEAN THOMAS </span><br>
-Numéro joignable: 0708340369<br>
-TN: 2536067595@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, CITÉ <br>
-<br>
-1 poteau 👆👆<br>
-14/01/2026, 21:24 - Adou: ‎<a href="IMG-20251114-WA0395.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0395.jpg</a> (fichier joint)<br>
-14/01/2026, 21:24 - Adou: 'Nom du <span class="client-name">CLIENT : IKENNA ISAIAN</span><br>
-- NUMÉRO: 0709805717<br>
-- TN: *2536079799@mtn.ci*<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:25 - Adou: ‎<a href="IMG-20251114-WA0396.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0396.jpg</a> (fichier joint)<br>
-14/01/2026, 21:25 - Adou: 'Nom du <span class="client-name">CLIENT : Mde Kouadio </span><br>
-- NUMÉRO: 0585322656<br>
-- TN: *2536079865@mtn.ci*<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:26 - Adou: ‎<a href="IMG-20251115-WA0252.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0252.jpg</a> (fichier joint)<br>
-14/01/2026, 21:26 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: BABA OULEHONON ANNE REBECCA </span><br>
-Numéro joignable : 0749506322<br>
-TN: 2536079038@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, NITORO<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:27 - Adou: ‎<a href="IMG-20251115-WA0253.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0253.jpg</a> (fichier joint)<br>
-14/01/2026, 21:27 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: YAO KOUAME ISAAC </span><br>
-Numéro joignable : 0709781020<br>
-TN: 2536068802@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, LAC PHARMACIE <br>
-<br>
-1 poteau,👆👆<br>
-14/01/2026, 21:29 - Adou: <br>
-14/01/2026, 21:29 - Adou: ‎<a href="IMG-20251118-WA0419.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0419.jpg</a> (fichier joint)<br>
-14/01/2026, 21:29 - Adou: ‎<a href="IMG-20251118-WA0420.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0420.jpg</a> (fichier joint)<br>
-14/01/2026, 21:29 - Adou: ‎<a href="IMG-20251118-WA0421.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0421.jpg</a> (fichier joint)<br>
-14/01/2026, 21:31 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: LORGES JÉRÉMY JULIEN </span><br>
-Numéro joignable : 0708559946<br>
-TN: 2536068345@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, MAQUIS BAOULÉ <br>
-<br>
-3 poteaux 👆👆<br>
-14/01/2026, 21:32 - Adou: ‎<a href="IMG-20251118-WA0425.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0425.jpg</a> (fichier joint)<br>
-14/01/2026, 21:33 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: OULA GUELA BONAIN CHARLOTTE </span><br>
-Numéro joignable : 0704141698<br>
-TN: 2536041343@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, LAC PAVE<br>
-<br>
-1 poteau 👆👆👆<br>
-14/01/2026, 21:34 - Adou: ‎<a href="IMG-20251118-WA0426.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0426.jpg</a> (fichier joint)<br>
-14/01/2026, 21:34 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: CABORE ILIASSA</span><br>
-Numéro joignable : 0779613818<br>
-TN: 2536068553@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, FRANCOPHONIE <br>
-1 poteau 👆👆 <Ce message a été modifié><br>
-14/01/2026, 21:40 - Adou: <br>
-14/01/2026, 21:40 - Adou: ‎<a href="IMG-20251120-WA0407.jpg" class="media-link" target="_blank">📎 IMG-20251120-WA0407.jpg</a> (fichier joint)<br>
-14/01/2026, 21:40 - Adou: ‎<a href="IMG-20251120-WA0408.jpg" class="media-link" target="_blank">📎 IMG-20251120-WA0408.jpg</a> (fichier joint)<br>
-14/01/2026, 21:40 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: GBEGBE AMANDINE </span><br>
-Numéro joignable :0566910314<br>
-TN: 2536041546@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, CITÉ CAISSE <br>
-<br>
-2 poteaux<br>
-14/01/2026, 21:43 - Adou: ‎<a href="IMG-20251201-WA0250.jpg" class="media-link" target="_blank">📎 IMG-20251201-WA0250.jpg</a> (fichier joint)<br>
-01 poteau implanté<br>
-14/01/2026, 21:43 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: AGBOHOUN GUEGUEHI MARTIAL </span><br>
-Numéro joignable : 0708151060<br>
-TN: 2536068897@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, Commissariat 1er arrondissement <br>
-<br>
-1 poteau 👆👆<br>
-14/01/2026, 21:47 - Adou: <br>
-14/01/2026, 21:47 - Adou: ‎<a href="IMG-20251202-WA0314.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0314.jpg</a> (fichier joint)<br>
-14/01/2026, 21:48 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: OUATTARA GNINWOYO EDITH</span><br>
-Numéro joignable : 0508673950<br>
-TN: 2536040885@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, Cité Caisse <br>
-<br>
-2 poteau 👆 <Ce message a été modifié><br>
-14/01/2026, 21:49 - Adou: <br>
-14/01/2026, 21:49 - Adou: ‎<a href="IMG-20251202-WA0315.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0315.jpg</a> (fichier joint)<br>
-14/01/2026, 21:50 - Adou: 'Nom du <span class="client-name">CLIENT : SIBY ANNE CHRISTELLE </span><br>
-- NUMÉRO: 0506896454<br>
-- TN: *2536045870@mtn.ci*<br>
-<br>
-2 poteau 👆👆 <Ce message a été modifié><br>
-14/01/2026, 21:56 - Adou: ‎<a href="IMG-20251212-WA0191.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0191.jpg</a> (fichier joint)<br>
-14/01/2026, 21:56 - Adou: ‎<a href="IMG-20251212-WA0193.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0193.jpg</a> (fichier joint)<br>
-14/01/2026, 21:57 - Adou: Nom du <span class="client-name">CLIENT : POMBO EVE MARIE ANGE </span><br>
-- NUMÉRO: 0757907353<br>
-- TN: *2536047313@mtn.ci*<br>
-<br>
-1 poteau 👆👆<br>
-14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0207.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0207.jpg</a> (fichier joint)<br>
-2 poteaux implantés.<br>
-14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0208.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0208.jpg</a> (fichier joint)<br>
-14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0215.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0215.jpg</a> (fichier joint)<br>
-14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0211.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0211.jpg</a> (fichier joint)<br>
-14/01/2026, 21:59 - Adou: 'Nom du <span class="client-name">CLIENT : AFFOU KOUAME </span><br>
-- NUMÉRO: +2250716410096<br>
-- TN: *2536045883@mtn.ci*<br>
- 2 poteaux 👆👆<br>
-14/01/2026, 22:01 - Adou: ‎<a href="IMG-20251212-WA0191.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0191.jpg</a> (fichier joint)<br>
-14/01/2026, 22:01 - Adou: ‎<a href="IMG-20251212-WA0193.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0193.jpg</a> (fichier joint)<br>
-14/01/2026, 22:01 - Adou: Nom du <span class="client-name">CLIENT : MEH AHOU CECILIA </span><br>
-- NUMÉRO: 0749273281<br>
-- TN: *2536045237@mtn.ci*<br>
-<br>
-1 poteau 👆👆 <Ce message a été modifié><br>
-14/01/2026, 22:04 - Adou: ‎<a href="IMG-20251215-WA0225.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0225.jpg</a> (fichier joint)<br>
-01 poteau implanté 🚨🚨<br>
-14/01/2026, 22:04 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: BROU KOUACOU MARIUS CÉSAR </span><br>
-Numéro joignable : +2250758872544<br>
-TN: 2536046653@mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, LAC FRANCOPHONIE <br>
-<br>
-,👆👆<br>
-14/01/2026, 22:05 - Adou: ‎<a href="IMG-20251215-WA0234.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0234.jpg</a> (fichier joint)<br>
-01 poteau implanté 🚨🚨<br>
-14/01/2026, 22:07 - Adou: 'Nom du <span class="client-name">CLIENT : KONAN KOUASSI JULES GAUTIER N'DRI</span><br>
-- NUMÉRO: 0544826885<br>
-- TN: *2536045017@mtn.ci*<br>
-1 poteau 👆👆<br>
-14/01/2026, 22:08 - Adou: <br>
-14/01/2026, 22:08 - Adou: ‎<a href="IMG-20251215-WA0232.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0232.jpg</a> (fichier joint)<br>
-14/01/2026, 22:08 - Adou: ‎<a href="IMG-20251215-WA0233.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0233.jpg</a> (fichier joint)<br>
-14/01/2026, 22:08 - Adou: Nom du <span class="client-name">CLIENT : YEOULE CLAKO LANDRY </span><br>
-- NUMÉRO: 0757577710<br>
-- TN: *2536045740@mtn.ci*<br>
-<br>
-2 poteaux 👆👆<br>
-14/01/2026, 22:12 - Adou: ‎<a href="IMG-20251221-WA0001.jpg" class="media-link" target="_blank">📎 IMG-20251221-WA0001.jpg</a> (fichier joint)<br>
-14/01/2026, 22:13 - Adou: Nom du <span class="client-name">CLIENT : ANOUMAN AMAN PHILLIPE OLIVIER </span><br>
-- NUMÉRO: 0749747064<br>
-- TN: *2536042852@mtn.ci*<br>
-<br>
-1 poteau<br>
-14/01/2026, 22:19 - Adou: <br>
-14/01/2026, 22:19 - Adou: ‎<a href="IMG-20251227-WA0169.jpg" class="media-link" target="_blank">📎 IMG-20251227-WA0169.jpg</a> (fichier joint)<br>
-14/01/2026, 22:19 - Adou: ‎<a href="IMG-20251227-WA0170.jpg" class="media-link" target="_blank">📎 IMG-20251227-WA0170.jpg</a> (fichier joint)<br>
-14/01/2026, 22:20 - Adou: Nom du <span class="client-name">CLIENT : NEHINHOULOUKA GUY SERGE SEA </span><br>
-- NUMÉRO: 0768960550<br>
-- TN: *2536050512@mtn.ci*<br>
-<br>
-2 poteaux<br>
-14/01/2026, 22:22 - Adou: ‎<a href="IMG-20260114-WA0300.jpg" class="media-link" target="_blank">📎 IMG-20260114-WA0300.jpg</a> (fichier joint)<br>
-14/01/2026, 22:23 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client:  AKRE MOYA ANNE LOUANGE </span><br>
-Numéro joignable : +2250767896411<br>
-TN: 2536047828@mtn.ci<br>
-Forfait: 15.000f <br>
-  SAN PEDRO, LAC SICOGI<br>
-<br>
-1 poteau 👆👆<br>
-14/01/2026, 22:26 - Adou: ‎<a href="IMG-20251227-WA0171.jpg" class="media-link" target="_blank">📎 IMG-20251227-WA0171.jpg</a> (fichier joint)<br>
-14/01/2026, 22:27 - Adou: Nom du <span class="client-name">CLIENT : AFFOUE TATIANA PRISCA KOUASSI KOUAKOU </span><br>
-- NUMÉRO: 0708556806<br>
-- TN: *2536046828@mtn.ci*<br>
-<br>
-1 poteau 👆👆<br>
-14/01/2026, 22:29 - Adou: <br>
-14/01/2026, 22:29 - Adou: ‎<a href="IMG-20260114-WA0307.jpg" class="media-link" target="_blank">📎 IMG-20260114-WA0307.jpg</a> (fichier joint)<br>
-14/01/2026, 22:29 - Adou: ‎<a href="IMG-20260105-WA0256.jpg" class="media-link" target="_blank">📎 IMG-20260105-WA0256.jpg</a> (fichier joint)<br>
-14/01/2026, 22:29 - Adou: 'Nom du <span class="client-name">CLIENT : YAO KOFFI SERAPHIN </span><br>
-- NUMÉRO: 0508650125<br>
-- TN: *2536046588@mtn.ci*<br>
-<br>
-2 poteaux 👆👆👆<br>
-14/01/2026, 22:30 - Adou: <br>
-14/01/2026, 22:30 - Adou: ‎<a href="IMG-20260105-WA0257.jpg" class="media-link" target="_blank">📎 IMG-20260105-WA0257.jpg</a> (fichier joint)<br>
-14/01/2026, 22:30 - Adou: ‎<a href="IMG-20260105-WA0258.jpg" class="media-link" target="_blank">📎 IMG-20260105-WA0258.jpg</a> (fichier joint)<br>
-14/01/2026, 22:31 - Adou: 'Nom du <span class="client-name">CLIENT : MELEDJE ARMEL AMARI </span><br>
-- NUMÉRO: 07 07 23 3394<br>
-- TN: *2536048200@mtn.ci*<br>
-<br>
-2 poteaux 👆👆👆<br>
-14/01/2026, 22:34 - Adou: ‎<a href="IMG-20260108-WA0277.jpg" class="media-link" target="_blank">📎 IMG-20260108-WA0277.jpg</a> (fichier joint)<br>
-14/01/2026, 22:34 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: KONE KIDOU ELIAS</span><br>
-Numéro joignable : 0789761185<br>
-TN: 2536050798mtn.ci<br>
-1 poteau 👆👆<br>
-17/01/2026, 01:55 - Adou: ‎<a href="IMG-20251216-WA0145.jpg" class="media-link" target="_blank">📎 IMG-20251216-WA0145.jpg</a> (fichier joint)<br>
-17/01/2026, 01:55 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : LEGRE YANKALA FULGENCE</span><br>
-<br>
-Numéro joignable: 0546732741<br>
-TN: 2536046880@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, nitoro<br>
-<br>
-1 poteau<br>
-👆👆<br>
-17/01/2026, 02:53 - Adou: ‎<a href="IMG-20260117-WA0001.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0001.jpg</a> (fichier joint)<br>
-17/01/2026, 02:53 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : KOFFI LEA N'GUESSAN</span><br>
-<br>
-Numéro joignable: 0748753731<br>
-TN: 2536050451@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, NITORO<br>
-<br>
-1 poteau 👆👆👆<br>
-17/01/2026, 02:55 - Adou: ‎<a href="IMG-20260117-WA0002.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0002.jpg</a> (fichier joint)<br>
-17/01/2026, 02:55 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : KRAMO KOUAME RAYMOND </span><br>
-<br>
-Numéro joignable: 0709112727<br>
-TN: 2536049928@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, BALMER <br>
-<br>
-1 poteau 👆👆👆👆<br>
-17/01/2026, 02:56 - Adou: <br>
-17/01/2026, 02:56 - Adou: ‎<a href="IMG-20260117-WA0003.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0003.jpg</a> (fichier joint)<br>
-17/01/2026, 02:56 - Adou: ‎<a href="IMG-20260117-WA0004.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0004.jpg</a> (fichier joint)<br>
-17/01/2026, 02:57 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: KOUAKOU KOUADIO AMADOU</span><br>
-Numéro joignable : 0759774244<br>
-TN: 2536047080@mtn.ci<br>
-SN:485754435D0F5B5<br>
-Forfait: 10.000f <br>
-  NITORO EXTENSION,EN FACE DE L'HÔTEL DUNAMIS<br>
-<br>
-2 poteaux 👆👆👆<br>
-17/01/2026, 02:58 - Adou: <br>
-17/01/2026, 02:58 - Adou: ‎<a href="IMG-20260117-WA0006.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0006.jpg</a> (fichier joint)<br>
-17/01/2026, 02:58 - Adou: ‎<a href="IMG-20260117-WA0007.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0007.jpg</a> (fichier joint)<br>
-17/01/2026, 02:59 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : DEBORAH LAURE GNONSOA</span><br>
-<br>
-Numéro joignable: 0768407443<br>
-TN: 2536048223@mtn.ci<br>
-SN:485754435D507FB5<br>
-Forfait: 10.000f <br>
-SAN PEDRO, nitoro extension <br>
-<br>
-2 poteaux 👆👆<br>
-17/01/2026, 03:00 - Adou: <br>
-17/01/2026, 03:00 - Adou: ‎<a href="IMG-20260117-WA0008.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0008.jpg</a> (fichier joint)<br>
-17/01/2026, 03:00 - Adou: ‎<a href="IMG-20260117-WA0009.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0009.jpg</a> (fichier joint)<br>
-17/01/2026, 03:00 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : DAGO BONI JUNIOR </span><br>
-<br>
-Numéro joignable: 0576670111<br>
-TN: 2536046529@mtn.ci<br>
-Forfait: 10.000f <br>
-SAN PEDRO, cité nitro <br>
-<br>
-2 poteaux 👆👆<br>
-17/01/2026, 03:02 - Adou: <br>
-17/01/2026, 03:02 - Adou: ‎<a href="IMG-20260117-WA0010.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0010.jpg</a> (fichier joint)<br>
-17/01/2026, 03:02 - Adou: ‎<a href="IMG-20260117-WA0011.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0011.jpg</a> (fichier joint)<br>
-17/01/2026, 03:03 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client : DOUE LEHI NESSEKON AIMEE</span><br>
-<br>
-Numéro joignable: 0565316242<br>
-TN: 2536050860@mtn.ci<br>
-SN:ZTEGD9D0AFBB<br>
-Forfait: 10.000f <br>
-SAN PEDRO, lac chapelle<br>
-<br>
-2 poteaux 👆👆<br>
-20/01/2026, 11:45 - Adou: ‎<a href="IMG-20260120-WA0430.jpg" class="media-link" target="_blank">📎 IMG-20260120-WA0430.jpg</a> (fichier joint)<br>
-20/01/2026, 11:46 - Adou: *Étude*<br>
-<br>
-<span class="client-name">Client: KONE KIDOU ELIAS</span><br>
-Numéro joignable : 0789761185<br>
-TN: 2536050798mtn.ci<br>
-Forfait: 10.000f <br>
-  SAN PEDRO, ÉCOLE MÉTHODISTE <br>
-<br>
-1 poteaux<br>
-
+            12/01/2026, 16:50 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0225.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0225.jpg" alt="IMG-20251112-WA0225.jpg" onclick="openImageModal('IMG-20251112-WA0225.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0225.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0225.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>12/01/2026, 16:51 - Adou: Yao n'guessan<br>0505965353<br>TN 2536078962<br><br>1 poteau<br>12/01/2026, 16:55 - Adou:<br>12/01/2026, 16:55 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251113-WA0379.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251113-WA0379.jpg" alt="IMG-20251113-WA0379.jpg" onclick="openImageModal('IMG-20251113-WA0379.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251113-WA0379.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251113-WA0379.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>12/01/2026, 16:55 - Adou: <span class="client-name">Client : ZIAN GONDO GUY</span><br>Numéro joignable: 0546539646<br>TN: 2536069117@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, lac pave<br><br>1 poteau<br>12/01/2026, 16:56 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0059.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0059.jpg" alt="IMG-20251112-WA0059.jpg" onclick="openImageModal('IMG-20251112-WA0059.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0059.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0059.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>12/01/2026, 16:56 - Adou: <span class="client-name">Client : TANO BADJO RACHEL RUTH</span><br>Numéro joignable: 0596450760<br>TN: 2536069355<br>@mtn.ci<br>1 poteau <Ce message a été modifié><br>12/01/2026, 16:58 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251114-WA0381.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251114-WA0381.jpg" alt="IMG-20251114-WA0381.jpg" onclick="openImageModal('IMG-20251114-WA0381.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251114-WA0381.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251114-WA0381.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>12/01/2026, 16:58 - Adou: <span class="client-name">Client : gohou dago pierre</span><br>Numéro joignable: 0586828288<br>TN: 2536068996@mtn.ci<br>SAN PEDRO, jul fery<br>13/01/2026, 05:00 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251115-WA0247.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251115-WA0247.jpg" alt="IMG-20251115-WA0247.jpg" onclick="openImageModal('IMG-20251115-WA0247.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251115-WA0247.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251115-WA0247.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:00 - Adou: *Étude*<br><br><span class="client-name">Client : boue ponnin eleonore</span><br>Numéro joignable: 0508670266<br>TN: 2536068761@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO,<br><br>1 poteau<br>image 👆👆👆👆 <Ce message a été modifié><br>13/01/2026, 05:01 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251115-WA0245.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251115-WA0245.jpg" alt="IMG-20251115-WA0245.jpg" onclick="openImageModal('IMG-20251115-WA0245.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251115-WA0245.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251115-WA0245.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:01 - Adou: *Étude*<br><br><span class="client-name">Client : GAHA DJIE JEAN LUC</span><br>Numéro joignable: 0566052381<br>TN: 2536079824@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO,  francophonie<br><br>1 poteau <Ce message a été modifié><br>13/01/2026, 05:02 - Adou:<br>13/01/2026, 05:02 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251115-WA0242.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251115-WA0242.jpg" alt="IMG-20251115-WA0242.jpg" onclick="openImageModal('IMG-20251115-WA0242.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251115-WA0242.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251115-WA0242.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:02 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251115-WA0243.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251115-WA0243.jpg" alt="IMG-20251115-WA0243.jpg" onclick="openImageModal('IMG-20251115-WA0243.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251115-WA0243.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251115-WA0243.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:02 - Adou: *Étude*<br><br><span class="client-name">Client : BAKARI KOSSIA MANDJALA</span><br>Numéro joignable: 0508670280<br>TN: 2536067405@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO,  lac classic<br><br>2 poteaux<br><br>👆👆👆<br>13/01/2026, 05:03 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251115-WA0005.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251115-WA0005.jpg" alt="IMG-20251115-WA0005.jpg" onclick="openImageModal('IMG-20251115-WA0005.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251115-WA0005.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251115-WA0005.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:03 - Adou: TEAM STI<br><br>ETUDE<br><br><span class="client-name">CLIENT :  n'guessan koffi hubert</span><br>NUMERO JOINABBLE: 0576230148<br>FORFAIT: 10.000F<br>TN: 2536068146<br>SAN PEDRO jul fery<br><br>* 1 poteau<br>* 👆👆👆 <Ce message a été modifié><br>13/01/2026, 05:04 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251118-WA0083.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251118-WA0083.jpg" alt="IMG-20251118-WA0083.jpg" onclick="openImageModal('IMG-20251118-WA0083.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251118-WA0083.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251118-WA0083.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:04 - Adou: *Étude*<br><br><span class="client-name">Client : FLORA CARINE BOTTI</span><br>Numéro joignable: 0505920116<br>TN: 2536068867<br>@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO,  cité bahia<br><br>1 poteau<br>Image☝🏼☝🏼☝🏼☝🏼<br>13/01/2026, 05:05 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251119-WA0338.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251119-WA0338.jpg" alt="IMG-20251119-WA0338.jpg" onclick="openImageModal('IMG-20251119-WA0338.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251119-WA0338.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251119-WA0338.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:06 - Adou: *Étude*<br><br><span class="client-name">Client: DAGO TANHO SEVERIN</span><br>Numéro joignable: 054850273<br>TN: 2536041655@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO,  jul fery<br><br>1 poteau<br><br>👆👆👆<br>13/01/2026, 05:06 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251119-WA0372.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251119-WA0372.jpg" alt="IMG-20251119-WA0372.jpg" onclick="openImageModal('IMG-20251119-WA0372.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251119-WA0372.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251119-WA0372.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:06 - Adou: *Étude*<br><br><span class="client-name">Client : ouattara mikitta bignon</span><br>Numéro joignable: 0596845655<br>TN: 2536068636@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO,  nitoro château<br><br>1 poteau<br>,👆👆👆👆<br>13/01/2026, 05:08 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251120-WA0326.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251120-WA0326.jpg" alt="IMG-20251120-WA0326.jpg" onclick="openImageModal('IMG-20251120-WA0326.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251120-WA0326.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251120-WA0326.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:08 - Adou: *Étude*<br><br><span class="client-name">Client : tra bi zinla bertin </span><br>Numéro joignable: 0759262579<br>TN: 2536079260@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, nitoro<br><br>1 poteau<br><br>👆👆👆 <Ce message a été modifié><br>13/01/2026, 05:11 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251122-WA0237.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251122-WA0237.jpg" alt="IMG-20251122-WA0237.jpg" onclick="openImageModal('IMG-20251122-WA0237.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251122-WA0237.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251122-WA0237.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:12 - Adou:<br>13/01/2026, 05:12 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251122-WA0232.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251122-WA0232.jpg" alt="IMG-20251122-WA0232.jpg" onclick="openImageModal('IMG-20251122-WA0232.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251122-WA0232.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251122-WA0232.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:12 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251122-WA0234.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251122-WA0234.jpg" alt="IMG-20251122-WA0234.jpg" onclick="openImageModal('IMG-20251122-WA0234.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251122-WA0234.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251122-WA0234.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:12 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251122-WA0233.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251122-WA0233.jpg" alt="IMG-20251122-WA0233.jpg" onclick="openImageModal('IMG-20251122-WA0233.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251122-WA0233.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251122-WA0233.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:13 - Adou: *Étude*<br><br><span class="client-name">Client : N'GUESSAN KOUASSI FRANCK ANI </span><br>Numéro joignable: 0585779215<br>TN: 2536042132@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, cité<br><br>*Étude*<br><br><span class="client-name">Client : kohon poegnon michelle</span><br>Numéro joignable: 0508676628<br>TN: 2536068089<br>@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO,  cité<br><br>4 poteaux<br><br>👆👆<br>13/01/2026, 05:14 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251125-WA0278.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251125-WA0278.jpg" alt="IMG-20251125-WA0278.jpg" onclick="openImageModal('IMG-20251125-WA0278.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251125-WA0278.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251125-WA0278.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:14 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251125-WA0279.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251125-WA0279.jpg" alt="IMG-20251125-WA0279.jpg" onclick="openImageModal('IMG-20251125-WA0279.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251125-WA0279.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251125-WA0279.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:15 - Adou: *Étude*<br><br><span class="client-name">Client : WADJA AMOUA OLGA</span><br><br>Numéro joignable: 0707986838<br>TN: 2536043089@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, lac pave<br><br>2 poteaux<br><br>👆👆👆👆<br>13/01/2026, 05:15 - Adou:<br>13/01/2026, 05:15 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251126-WA0226.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251126-WA0226.jpg" alt="IMG-20251126-WA0226.jpg" onclick="openImageModal('IMG-20251126-WA0226.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251126-WA0226.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251126-WA0226.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:15 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251126-WA0227.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251126-WA0227.jpg" alt="IMG-20251126-WA0227.jpg" onclick="openImageModal('IMG-20251126-WA0227.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251126-WA0227.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251126-WA0227.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:16 - Adou: *Étude*<br><br><span class="client-name">Client : KOFFI BOAMI MARTIN</span><br><br>Numéro joignable: 0505462140<br>TN: 2536042080@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, nitoro<br><br>2 poteaux<br><br>👆👆👆👆👆<br>13/01/2026, 05:16 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251127-WA0220.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251127-WA0220.jpg" alt="IMG-20251127-WA0220.jpg" onclick="openImageModal('IMG-20251127-WA0220.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251127-WA0220.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251127-WA0220.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:17 - Adou: *Étude*<br><br><span class="client-name">Client : TENIN ZEAN HYACINTH </span><br><br>Numéro joignable: 0501296677<br>TN: 2536068331@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, FRANCOPHONIE<br><br>1 poteau<br>👆👆👆<br>13/01/2026, 05:26 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251204-WA0110.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251204-WA0110.jpg" alt="IMG-20251204-WA0110.jpg" onclick="openImageModal('IMG-20251204-WA0110.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251204-WA0110.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251204-WA0110.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:26 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251204-WA0111.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251204-WA0111.jpg" alt="IMG-20251204-WA0111.jpg" onclick="openImageModal('IMG-20251204-WA0111.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251204-WA0111.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251204-WA0111.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:26 - Adou: *Étude*<br><br><span class="client-name">Client : YAO AKOUBA PATRICIA </span><br><br>Numéro joignable: 0585047420<br>TN: 2536047018@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, LAC FRANCOPHONIE<br><br>2 poteaux<br><br>👆👆👆 <Ce message a été modifié><br>13/01/2026, 05:31 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251213-WA0004.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251213-WA0004.jpg" alt="IMG-20251213-WA0004.jpg" onclick="openImageModal('IMG-20251213-WA0004.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251213-WA0004.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251213-WA0004.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:31 - Adou: *Étude*<br><br><span class="client-name">Client : YOUKOU MILANWOIN</span><br><br>Numéro joignable: 0708387314<br>TN: 2536045301@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, nitoro<br><br>1 poteau<br>👆👆👆👆<br>13/01/2026, 05:34 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251216-WA0144.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251216-WA0144.jpg" alt="IMG-20251216-WA0144.jpg" onclick="openImageModal('IMG-20251216-WA0144.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251216-WA0144.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251216-WA0144.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>ZADI HONNON ALICE GOZE PLANTATION D'UN POTEAU<br>13/01/2026, 05:35 - Adou: *Étude*<br><br><span class="client-name">Client : zadi honnon Alice goze</span><br><br>Numéro joignable: 0140947108<br>TN: 2536048510@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITORO<br><br>1 poteau 👆👆👆👆👆<br>13/01/2026, 05:38 - Adou:<br>13/01/2026, 05:38 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0187.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0187.jpg" alt="IMG-20251215-WA0187.jpg" onclick="openImageModal('IMG-20251215-WA0187.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0187.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0187.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:38 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0188.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0188.jpg" alt="IMG-20251215-WA0188.jpg" onclick="openImageModal('IMG-20251215-WA0188.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0188.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0188.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:38 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0189.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0189.jpg" alt="IMG-20251215-WA0189.jpg" onclick="openImageModal('IMG-20251215-WA0189.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0189.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0189.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:38 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0190.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0190.jpg" alt="IMG-20251215-WA0190.jpg" onclick="openImageModal('IMG-20251215-WA0190.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0190.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0190.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:38 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0191.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0191.jpg" alt="IMG-20251215-WA0191.jpg" onclick="openImageModal('IMG-20251215-WA0191.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0191.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0191.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:38 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0192.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0192.jpg" alt="IMG-20251215-WA0192.jpg" onclick="openImageModal('IMG-20251215-WA0192.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0192.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0192.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:44 - Adou: ETUDE<br><br>WAYE TCHROUIN<br><br>0594932244<br>SAN PEDRO, BALMER DERNIER HOTEL AIBA<br>TN: 2536043843@mtn.ci<br>SN :<br>485754435D51E6B5<br><br>ÉTUDE<br><br>YOH GNOLEBA JULES DONALD<br><br>0586943400<br>SAN PEDRO, BALMER DERRIERE HOTEL AYIBA<br><br>*Étude*<br><br><span class="client-name">Client: KONE ABDOULAYE KLOFIE</span><br>Numéro joignable : +2250709128430<br>TN: 2536047855@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, LAC AHIBA<br><br>*6 poteaux*<br><br><br>👆👆👆👆👆👆👆<br>13/01/2026, 05:46 - Adou:<br>13/01/2026, 05:46 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251217-WA0069.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251217-WA0069.jpg" alt="IMG-20251217-WA0069.jpg" onclick="openImageModal('IMG-20251217-WA0069.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251217-WA0069.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251217-WA0069.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:46 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251217-WA0070.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251217-WA0070.jpg" alt="IMG-20251217-WA0070.jpg" onclick="openImageModal('IMG-20251217-WA0070.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251217-WA0070.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251217-WA0070.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:47 - Adou: <span class="client-name">Client : LATTE PATRICK</span><br><br>Numéro joignable: 0747277742<br>TN: 2536050786@mtn.ci<br>SN: 485754435D5723B5<br>Forfait: 10.000f<br>SAN PEDRO, nitoro extension derrière l’église Assemblée de Dieu<br><br><br>NB: 2 poteaux métalliques à implanter<br>👆👆👆<br>13/01/2026, 05:52 - Adou:<br>13/01/2026, 05:52 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251220-WA0085.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251220-WA0085.jpg" alt="IMG-20251220-WA0085.jpg" onclick="openImageModal('IMG-20251220-WA0085.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251220-WA0085.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251220-WA0085.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:52 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251220-WA0086.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251220-WA0086.jpg" alt="IMG-20251220-WA0086.jpg" onclick="openImageModal('IMG-20251220-WA0086.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251220-WA0086.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251220-WA0086.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 05:53 - Adou: *Étude*<br><br><span class="client-name">Client : ADOU AKOUA ANGE MARIE</span><br><br>Numéro joignable: 0566959542/0749231182<br>TN: 2536046688@mtn.ci<br><br><br>NB: 2 poteau à Implanter<br>13/01/2026, 06:09 - Adou:<br>13/01/2026, 06:09 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260108-WA0272.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260108-WA0272.jpg" alt="IMG-20260108-WA0272.jpg" onclick="openImageModal('IMG-20260108-WA0272.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260108-WA0272.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260108-WA0272.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 06:09 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260108-WA0273.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260108-WA0273.jpg" alt="IMG-20260108-WA0273.jpg" onclick="openImageModal('IMG-20260108-WA0273.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260108-WA0273.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260108-WA0273.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 06:10 - Adou: *Étude*<br><br><span class="client-name">Client : KOUAME FREDY</span><br><br>Numéro joignable: 0708015627<br>TN: 2536040647@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, BALMER<br><br>2 poteaux<br>👆👆👆<br>13/01/2026, 06:10 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260112-WA0169.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260112-WA0169.jpg" alt="IMG-20260112-WA0169.jpg" onclick="openImageModal('IMG-20260112-WA0169.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260112-WA0169.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260112-WA0169.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 06:11 - Adou: *Étude*<br><br><span class="client-name">Client: YAO YEBOUA JONAS</span><br>Numéro joignable : 0747996918<br>TN: 2536049294@mtn.ci<br>SN:485754435D4E96B5<br>Forfait: 15.000f<br>SAN PEDRO CITE, VERS LA POSTE<br><br>1 poteau<br><br>👆👆👆<br>13/01/2026, 08:44 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260113-WA0002.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260113-WA0002.jpg" alt="IMG-20260113-WA0002.jpg" onclick="openImageModal('IMG-20260113-WA0002.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260113-WA0002.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260113-WA0002.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>13/01/2026, 08:45 - Adou: *Étude*<br><br><span class="client-name">Client : ALI ATIEH</span><br><br>Numéro joignable: 0709281324<br>TN: 2536048785@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITORO<br><br>1 poteau<br>13/01/2026, 15:39 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260113-WA0248.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260113-WA0248.jpg" alt="IMG-20260113-WA0248.jpg" onclick="openImageModal('IMG-20260113-WA0248.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260113-WA0248.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260113-WA0248.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>Poteau KONAN KOUASSIHILAIRE<br>13/01/2026, 15:40 - Adou: <span class="client-name">Client: KONAN KOUASSI HILAIRE</span><br>Numéro joignable : 0142732310/0709119198<br>TN: 2536048860@mtn.ci<br>Forfait: 10.000f<br>Lac en face de la pharmacie<br><br>1 poteau 👆👆👆<br>14/01/2026, 08:27 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251201-WA0250.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251201-WA0250.jpg" alt="IMG-20251201-WA0250.jpg" onclick="openImageModal('IMG-20251201-WA0250.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251201-WA0250.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251201-WA0250.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>01 poteau implanté<br>14/01/2026, 08:28 - Adou: *Étude*<br><br><span class="client-name">Client: AGBOHOUN GUEGUEHI MARTIAL </span><br>Numéro joignable : 0708151060<br>TN: 2536068897@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, Commissariat 1er arrondissement<br><br>1 poteau 👆👆👆<br>14/01/2026, 20:51 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260113-WA0245.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260113-WA0245.jpg" alt="IMG-20260113-WA0245.jpg" onclick="openImageModal('IMG-20260113-WA0245.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260113-WA0245.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260113-WA0245.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>Poteau VOH LOU  GADOUNAN<br>14/01/2026, 20:52 - Adou: *Étude*<br><br><span class="client-name">Client : VOH LOU GADOUNAN BENEDICTE</span><br><br>Numéro joignable: 0748787895<br>TN: 2536040449@mtn.ci<br><br>1 poteau 👆👆👆<br>14/01/2026, 20:53 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260113-WA0246.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260113-WA0246.jpg" alt="IMG-20260113-WA0246.jpg" onclick="openImageModal('IMG-20260113-WA0246.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260113-WA0246.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260113-WA0246.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>POTEAU  GNADOU LIDY ANNE AXELLE<br>14/01/2026, 20:53 - Adou: <span class="client-name">Client : GNADOU LIDY ANNE AXELLE</span><br><br>Numéro joignable: 0594449565<br>TN: 2536047695@mtn.ci<br><br>Forfait: 10.000f<br>SAN PEDRO, cité soccoce<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:02 - Adou:<br>14/01/2026, 21:02 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251202-WA0314.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251202-WA0314.jpg" alt="IMG-20251202-WA0314.jpg" onclick="openImageModal('IMG-20251202-WA0314.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251202-WA0314.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251202-WA0314.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:02 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251202-WA0317.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251202-WA0317.jpg" alt="IMG-20251202-WA0317.jpg" onclick="openImageModal('IMG-20251202-WA0317.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251202-WA0317.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251202-WA0317.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:03 - Adou: 'Nom du <span class="client-name">CLIENT : OUATTARA GNINWOYO EDITH</span><br>- NUMÉRO: 0508673950<br>- TN: *2536040885@mtn.ci*<br><br>2 poteaux 👆👆<br>14/01/2026, 21:03 - Adou:<br>14/01/2026, 21:04 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251202-WA0315.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251202-WA0315.jpg" alt="IMG-20251202-WA0315.jpg" onclick="openImageModal('IMG-20251202-WA0315.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251202-WA0315.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251202-WA0315.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:04 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251202-WA0316.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251202-WA0316.jpg" alt="IMG-20251202-WA0316.jpg" onclick="openImageModal('IMG-20251202-WA0316.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251202-WA0316.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251202-WA0316.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:04 - Adou: 'Nom du <span class="client-name">CLIENT : SIBY ANNE CHRISTELLE </span><br>- NUMÉRO: 0506896454<br>- TN: *2536045870@mtn.ci*<br>2 poteaux 👆👆👆<br>14/01/2026, 21:07 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0463.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0463.jpg" alt="IMG-20251112-WA0463.jpg" onclick="openImageModal('IMG-20251112-WA0463.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0463.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0463.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:07 - Adou: Nom du <span class="client-name">CLIENT :ABOTOR SEWA AKO</span><br><br>- NUMÉRO: 0748205637<br>- TN: *2536069352@mtn.ci*<br><br>1 poteau 👆👆👆👆<br>14/01/2026, 21:11 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0460.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0460.jpg" alt="IMG-20251112-WA0460.jpg" onclick="openImageModal('IMG-20251112-WA0460.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0460.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0460.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:12 - Adou: *Étude*<br><br><span class="client-name">Client: ZOKOU GRAH THIERRY ROLAND </span><br>Numéro joignable :0708190989<br>TN: 2536040292@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITORO<br><br>1 poteau👆👆👆<br>14/01/2026, 21:13 - Adou:<br>14/01/2026, 21:13 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0461.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0461.jpg" alt="IMG-20251112-WA0461.jpg" onclick="openImageModal('IMG-20251112-WA0461.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0461.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0461.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:13 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0462.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0462.jpg" alt="IMG-20251112-WA0462.jpg" onclick="openImageModal('IMG-20251112-WA0462.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0462.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0462.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:13 - Adou: *Étude*<br><br><span class="client-name">Client: KOUAME RODRIGUE ARMEL YAO</span><br>Numéro joignable :0708631945<br>TN: 2536068863@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITORO<br><br>2 poteaux 👆👆<br>14/01/2026, 21:15 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251113-WA0378.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251113-WA0378.jpg" alt="IMG-20251113-WA0378.jpg" onclick="openImageModal('IMG-20251113-WA0378.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251113-WA0378.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251113-WA0378.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:15 - Adou: Nom du <span class="client-name">CLIENT : KAWONAMAN CLINTCHO TOURE </span><br><br>- NUMÉRO: 0709098371<br>- TN: *2536040198@mtn.ci*<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:17 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260114-WA0290.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260114-WA0290.jpg" alt="IMG-20260114-WA0290.jpg" onclick="openImageModal('IMG-20260114-WA0290.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260114-WA0290.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260114-WA0290.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:17 - Adou: <span class="client-name">Client: YAO CEDRIC PIERRE   EMMAN</span><br>Numéro joignable : 0714347579<br>TN: 2536079795@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITERO<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:20 - Adou:<br>14/01/2026, 21:20 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0461.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0461.jpg" alt="IMG-20251112-WA0461.jpg" onclick="openImageModal('IMG-20251112-WA0461.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0461.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0461.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:20 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251112-WA0462.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251112-WA0462.jpg" alt="IMG-20251112-WA0462.jpg" onclick="openImageModal('IMG-20251112-WA0462.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251112-WA0462.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251112-WA0462.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:20 - Adou: <span class="client-name">Client: KOUAME RODRIGUE ARMEL YAO</span><br>Numéro joignable :0708631945<br>TN: 2536068863@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITORO<br><br>2 poteaux 👆👆👆<br>14/01/2026, 21:21 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251113-WA0378.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251113-WA0378.jpg" alt="IMG-20251113-WA0378.jpg" onclick="openImageModal('IMG-20251113-WA0378.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251113-WA0378.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251113-WA0378.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:22 - Adou: Nom du <span class="client-name">CLIENT :GUEUGUEU MIRIAM KATO </span><br><br>- NUMÉRO: 0779301075<br>- TN: *2536069418@mtn.ci*<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:23 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251114-WA0391.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251114-WA0391.jpg" alt="IMG-20251114-WA0391.jpg" onclick="openImageModal('IMG-20251114-WA0391.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251114-WA0391.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251114-WA0391.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:23 - Adou: *Étude*<br><br><span class="client-name">Client : POMBO HENRI JEAN THOMAS </span><br>Numéro joignable: 0708340369<br>TN: 2536067595@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, CITÉ<br><br>1 poteau 👆👆<br>14/01/2026, 21:24 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251114-WA0395.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251114-WA0395.jpg" alt="IMG-20251114-WA0395.jpg" onclick="openImageModal('IMG-20251114-WA0395.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251114-WA0395.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251114-WA0395.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:24 - Adou: 'Nom du <span class="client-name">CLIENT : IKENNA ISAIAN</span><br>- NUMÉRO: 0709805717<br>- TN: *2536079799@mtn.ci*<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:25 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251114-WA0396.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251114-WA0396.jpg" alt="IMG-20251114-WA0396.jpg" onclick="openImageModal('IMG-20251114-WA0396.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251114-WA0396.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251114-WA0396.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:25 - Adou: 'Nom du <span class="client-name">CLIENT : Mde Kouadio </span><br>- NUMÉRO: 0585322656<br>- TN: *2536079865@mtn.ci*<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:26 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251115-WA0252.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251115-WA0252.jpg" alt="IMG-20251115-WA0252.jpg" onclick="openImageModal('IMG-20251115-WA0252.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251115-WA0252.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251115-WA0252.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:26 - Adou: *Étude*<br><br><span class="client-name">Client: BABA OULEHONON ANNE REBECCA </span><br>Numéro joignable : 0749506322<br>TN: 2536079038@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITORO<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:27 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251115-WA0253.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251115-WA0253.jpg" alt="IMG-20251115-WA0253.jpg" onclick="openImageModal('IMG-20251115-WA0253.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251115-WA0253.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251115-WA0253.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:27 - Adou: *Étude*<br><br><span class="client-name">Client: YAO KOUAME ISAAC </span><br>Numéro joignable : 0709781020<br>TN: 2536068802@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, LAC PHARMACIE<br><br>1 poteau,👆👆<br>14/01/2026, 21:29 - Adou:<br>14/01/2026, 21:29 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251118-WA0419.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251118-WA0419.jpg" alt="IMG-20251118-WA0419.jpg" onclick="openImageModal('IMG-20251118-WA0419.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251118-WA0419.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251118-WA0419.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:29 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251118-WA0420.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251118-WA0420.jpg" alt="IMG-20251118-WA0420.jpg" onclick="openImageModal('IMG-20251118-WA0420.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251118-WA0420.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251118-WA0420.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:29 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251118-WA0421.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251118-WA0421.jpg" alt="IMG-20251118-WA0421.jpg" onclick="openImageModal('IMG-20251118-WA0421.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251118-WA0421.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251118-WA0421.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:31 - Adou: *Étude*<br><br><span class="client-name">Client: LORGES JÉRÉMY JULIEN </span><br>Numéro joignable : 0708559946<br>TN: 2536068345@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, MAQUIS BAOULÉ<br><br>3 poteaux 👆👆<br>14/01/2026, 21:32 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251118-WA0425.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251118-WA0425.jpg" alt="IMG-20251118-WA0425.jpg" onclick="openImageModal('IMG-20251118-WA0425.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251118-WA0425.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251118-WA0425.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:33 - Adou: *Étude*<br><br><span class="client-name">Client: OULA GUELA BONAIN CHARLOTTE </span><br>Numéro joignable : 0704141698<br>TN: 2536041343@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, LAC PAVE<br><br>1 poteau 👆👆👆<br>14/01/2026, 21:34 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251118-WA0426.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251118-WA0426.jpg" alt="IMG-20251118-WA0426.jpg" onclick="openImageModal('IMG-20251118-WA0426.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251118-WA0426.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251118-WA0426.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:34 - Adou: *Étude*<br><br><span class="client-name">Client: CABORE ILIASSA</span><br>Numéro joignable : 0779613818<br>TN: 2536068553@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, FRANCOPHONIE<br>1 poteau 👆👆 <Ce message a été modifié><br>14/01/2026, 21:40 - Adou:<br>14/01/2026, 21:40 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251120-WA0407.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251120-WA0407.jpg" alt="IMG-20251120-WA0407.jpg" onclick="openImageModal('IMG-20251120-WA0407.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251120-WA0407.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251120-WA0407.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:40 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251120-WA0408.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251120-WA0408.jpg" alt="IMG-20251120-WA0408.jpg" onclick="openImageModal('IMG-20251120-WA0408.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251120-WA0408.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251120-WA0408.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:40 - Adou: *Étude*<br><br><span class="client-name">Client: GBEGBE AMANDINE </span><br>Numéro joignable :0566910314<br>TN: 2536041546@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, CITÉ CAISSE<br><br>2 poteaux<br>14/01/2026, 21:43 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251201-WA0250.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251201-WA0250.jpg" alt="IMG-20251201-WA0250.jpg" onclick="openImageModal('IMG-20251201-WA0250.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251201-WA0250.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251201-WA0250.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>01 poteau implanté<br>14/01/2026, 21:43 - Adou: *Étude*<br><br><span class="client-name">Client: AGBOHOUN GUEGUEHI MARTIAL </span><br>Numéro joignable : 0708151060<br>TN: 2536068897@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, Commissariat 1er arrondissement<br><br>1 poteau 👆👆<br>14/01/2026, 21:47 - Adou:<br>14/01/2026, 21:47 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251202-WA0314.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251202-WA0314.jpg" alt="IMG-20251202-WA0314.jpg" onclick="openImageModal('IMG-20251202-WA0314.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251202-WA0314.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251202-WA0314.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:48 - Adou: *Étude*<br><br><span class="client-name">Client: OUATTARA GNINWOYO EDITH</span><br>Numéro joignable : 0508673950<br>TN: 2536040885@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, Cité Caisse<br><br>2 poteau 👆 <Ce message a été modifié><br>14/01/2026, 21:49 - Adou:<br>14/01/2026, 21:49 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251202-WA0315.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251202-WA0315.jpg" alt="IMG-20251202-WA0315.jpg" onclick="openImageModal('IMG-20251202-WA0315.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251202-WA0315.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251202-WA0315.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:50 - Adou: 'Nom du <span class="client-name">CLIENT : SIBY ANNE CHRISTELLE </span><br>- NUMÉRO: 0506896454<br>- TN: *2536045870@mtn.ci*<br><br>2 poteau 👆👆 <Ce message a été modifié><br>14/01/2026, 21:56 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251212-WA0191.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251212-WA0191.jpg" alt="IMG-20251212-WA0191.jpg" onclick="openImageModal('IMG-20251212-WA0191.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251212-WA0191.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251212-WA0191.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:56 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251212-WA0193.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251212-WA0193.jpg" alt="IMG-20251212-WA0193.jpg" onclick="openImageModal('IMG-20251212-WA0193.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251212-WA0193.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251212-WA0193.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:57 - Adou: Nom du <span class="client-name">CLIENT : POMBO EVE MARIE ANGE </span><br>- NUMÉRO: 0757907353<br>- TN: *2536047313@mtn.ci*<br><br>1 poteau 👆👆<br>14/01/2026, 21:58 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251213-WA0207.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251213-WA0207.jpg" alt="IMG-20251213-WA0207.jpg" onclick="openImageModal('IMG-20251213-WA0207.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251213-WA0207.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251213-WA0207.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>2 poteaux implantés.<br>14/01/2026, 21:58 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251213-WA0208.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251213-WA0208.jpg" alt="IMG-20251213-WA0208.jpg" onclick="openImageModal('IMG-20251213-WA0208.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251213-WA0208.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251213-WA0208.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:58 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251213-WA0215.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251213-WA0215.jpg" alt="IMG-20251213-WA0215.jpg" onclick="openImageModal('IMG-20251213-WA0215.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251213-WA0215.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251213-WA0215.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:58 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251213-WA0211.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251213-WA0211.jpg" alt="IMG-20251213-WA0211.jpg" onclick="openImageModal('IMG-20251213-WA0211.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251213-WA0211.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251213-WA0211.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 21:59 - Adou: 'Nom du <span class="client-name">CLIENT : AFFOU KOUAME </span><br>- NUMÉRO: +2250716410096<br>- TN: *2536045883@mtn.ci*<br>2 poteaux 👆👆<br>14/01/2026, 22:01 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251212-WA0191.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251212-WA0191.jpg" alt="IMG-20251212-WA0191.jpg" onclick="openImageModal('IMG-20251212-WA0191.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251212-WA0191.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251212-WA0191.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:01 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251212-WA0193.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251212-WA0193.jpg" alt="IMG-20251212-WA0193.jpg" onclick="openImageModal('IMG-20251212-WA0193.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251212-WA0193.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251212-WA0193.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:01 - Adou: Nom du <span class="client-name">CLIENT : MEH AHOU CECILIA </span><br>- NUMÉRO: 0749273281<br>- TN: *2536045237@mtn.ci*<br><br>1 poteau 👆👆 <Ce message a été modifié><br>14/01/2026, 22:04 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0225.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0225.jpg" alt="IMG-20251215-WA0225.jpg" onclick="openImageModal('IMG-20251215-WA0225.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0225.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0225.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>01 poteau implanté 🚨🚨<br>14/01/2026, 22:04 - Adou: *Étude*<br><br><span class="client-name">Client: BROU KOUACOU MARIUS CÉSAR </span><br>Numéro joignable : +2250758872544<br>TN: 2536046653@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, LAC FRANCOPHONIE<br><br>,👆👆<br>14/01/2026, 22:05 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0234.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0234.jpg" alt="IMG-20251215-WA0234.jpg" onclick="openImageModal('IMG-20251215-WA0234.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0234.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0234.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>01 poteau implanté 🚨🚨<br>14/01/2026, 22:07 - Adou: 'Nom du <span class="client-name">CLIENT : KONAN KOUASSI JULES GAUTIER N'DRI</span><br>- NUMÉRO: 0544826885<br>- TN: *2536045017@mtn.ci*<br>1 poteau 👆👆<br>14/01/2026, 22:08 - Adou:<br>14/01/2026, 22:08 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0232.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0232.jpg" alt="IMG-20251215-WA0232.jpg" onclick="openImageModal('IMG-20251215-WA0232.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0232.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0232.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:08 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251215-WA0233.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251215-WA0233.jpg" alt="IMG-20251215-WA0233.jpg" onclick="openImageModal('IMG-20251215-WA0233.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251215-WA0233.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251215-WA0233.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:08 - Adou: Nom du <span class="client-name">CLIENT : YEOULE CLAKO LANDRY </span><br>- NUMÉRO: 0757577710<br>- TN: *2536045740@mtn.ci*<br><br>2 poteaux 👆👆<br>14/01/2026, 22:12 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251221-WA0001.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251221-WA0001.jpg" alt="IMG-20251221-WA0001.jpg" onclick="openImageModal('IMG-20251221-WA0001.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251221-WA0001.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251221-WA0001.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:13 - Adou: Nom du <span class="client-name">CLIENT : ANOUMAN AMAN PHILLIPE OLIVIER </span><br>- NUMÉRO: 0749747064<br>- TN: *2536042852@mtn.ci*<br><br>1 poteau<br>14/01/2026, 22:19 - Adou:<br>14/01/2026, 22:19 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251227-WA0169.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251227-WA0169.jpg" alt="IMG-20251227-WA0169.jpg" onclick="openImageModal('IMG-20251227-WA0169.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251227-WA0169.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251227-WA0169.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:19 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251227-WA0170.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251227-WA0170.jpg" alt="IMG-20251227-WA0170.jpg" onclick="openImageModal('IMG-20251227-WA0170.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251227-WA0170.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251227-WA0170.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:20 - Adou: Nom du <span class="client-name">CLIENT : NEHINHOULOUKA GUY SERGE SEA </span><br>- NUMÉRO: 0768960550<br>- TN: *2536050512@mtn.ci*<br><br>2 poteaux<br>14/01/2026, 22:22 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260114-WA0300.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260114-WA0300.jpg" alt="IMG-20260114-WA0300.jpg" onclick="openImageModal('IMG-20260114-WA0300.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260114-WA0300.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260114-WA0300.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:23 - Adou: *Étude*<br><br><span class="client-name">Client:  AKRE MOYA ANNE LOUANGE </span><br>Numéro joignable : +2250767896411<br>TN: 2536047828@mtn.ci<br>Forfait: 15.000f<br>SAN PEDRO, LAC SICOGI<br><br>1 poteau 👆👆<br>14/01/2026, 22:26 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251227-WA0171.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251227-WA0171.jpg" alt="IMG-20251227-WA0171.jpg" onclick="openImageModal('IMG-20251227-WA0171.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251227-WA0171.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251227-WA0171.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:27 - Adou: Nom du <span class="client-name">CLIENT : AFFOUE TATIANA PRISCA KOUASSI KOUAKOU </span><br>- NUMÉRO: 0708556806<br>- TN: *2536046828@mtn.ci*<br><br>1 poteau 👆👆<br>14/01/2026, 22:29 - Adou:<br>14/01/2026, 22:29 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260114-WA0307.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260114-WA0307.jpg" alt="IMG-20260114-WA0307.jpg" onclick="openImageModal('IMG-20260114-WA0307.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260114-WA0307.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260114-WA0307.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:29 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260105-WA0256.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260105-WA0256.jpg" alt="IMG-20260105-WA0256.jpg" onclick="openImageModal('IMG-20260105-WA0256.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260105-WA0256.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260105-WA0256.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:29 - Adou: 'Nom du <span class="client-name">CLIENT : YAO KOFFI SERAPHIN </span><br>- NUMÉRO: 0508650125<br>- TN: *2536046588@mtn.ci*<br><br>2 poteaux 👆👆👆<br>14/01/2026, 22:30 - Adou:<br>14/01/2026, 22:30 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260105-WA0257.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260105-WA0257.jpg" alt="IMG-20260105-WA0257.jpg" onclick="openImageModal('IMG-20260105-WA0257.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260105-WA0257.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260105-WA0257.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:30 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260105-WA0258.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260105-WA0258.jpg" alt="IMG-20260105-WA0258.jpg" onclick="openImageModal('IMG-20260105-WA0258.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260105-WA0258.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260105-WA0258.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:31 - Adou: 'Nom du <span class="client-name">CLIENT : MELEDJE ARMEL AMARI </span><br>- NUMÉRO: 07 07 23 3394<br>- TN: *2536048200@mtn.ci*<br><br>2 poteaux 👆👆👆<br>14/01/2026, 22:34 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260108-WA0277.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260108-WA0277.jpg" alt="IMG-20260108-WA0277.jpg" onclick="openImageModal('IMG-20260108-WA0277.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260108-WA0277.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260108-WA0277.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>14/01/2026, 22:34 - Adou: *Étude*<br><br><span class="client-name">Client: KONE KIDOU ELIAS</span><br>Numéro joignable : 0789761185<br>TN: 2536050798mtn.ci<br>1 poteau 👆👆<br>17/01/2026, 01:55 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20251216-WA0145.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20251216-WA0145.jpg" alt="IMG-20251216-WA0145.jpg" onclick="openImageModal('IMG-20251216-WA0145.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20251216-WA0145.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20251216-WA0145.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 01:55 - Adou: *Étude*<br><br><span class="client-name">Client : LEGRE YANKALA FULGENCE</span><br><br>Numéro joignable: 0546732741<br>TN: 2536046880@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, nitoro<br><br>1 poteau<br>👆👆<br>17/01/2026, 02:53 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0001.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0001.jpg" alt="IMG-20260117-WA0001.jpg" onclick="openImageModal('IMG-20260117-WA0001.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0001.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0001.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 02:53 - Adou: *Étude*<br><br><span class="client-name">Client : KOFFI LEA N'GUESSAN</span><br><br>Numéro joignable: 0748753731<br>TN: 2536050451@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, NITORO<br><br>1 poteau 👆👆👆<br>17/01/2026, 02:55 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0002.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0002.jpg" alt="IMG-20260117-WA0002.jpg" onclick="openImageModal('IMG-20260117-WA0002.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0002.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0002.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 02:55 - Adou: *Étude*<br><br><span class="client-name">Client : KRAMO KOUAME RAYMOND </span><br><br>Numéro joignable: 0709112727<br>TN: 2536049928@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, BALMER<br><br>1 poteau 👆👆👆👆<br>17/01/2026, 02:56 - Adou:<br>17/01/2026, 02:56 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0003.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0003.jpg" alt="IMG-20260117-WA0003.jpg" onclick="openImageModal('IMG-20260117-WA0003.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0003.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0003.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 02:56 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0004.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0004.jpg" alt="IMG-20260117-WA0004.jpg" onclick="openImageModal('IMG-20260117-WA0004.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0004.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0004.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 02:57 - Adou: *Étude*<br><br><span class="client-name">Client: KOUAKOU KOUADIO AMADOU</span><br>Numéro joignable : 0759774244<br>TN: 2536047080@mtn.ci<br>SN:485754435D0F5B5<br>Forfait: 10.000f<br>NITORO EXTENSION,EN FACE DE L'HÔTEL DUNAMIS<br><br>2 poteaux 👆👆👆<br>17/01/2026, 02:58 - Adou:<br>17/01/2026, 02:58 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0006.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0006.jpg" alt="IMG-20260117-WA0006.jpg" onclick="openImageModal('IMG-20260117-WA0006.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0006.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0006.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 02:58 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0007.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0007.jpg" alt="IMG-20260117-WA0007.jpg" onclick="openImageModal('IMG-20260117-WA0007.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0007.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0007.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 02:59 - Adou: *Étude*<br><br><span class="client-name">Client : DEBORAH LAURE GNONSOA</span><br><br>Numéro joignable: 0768407443<br>TN: 2536048223@mtn.ci<br>SN:485754435D507FB5<br>Forfait: 10.000f<br>SAN PEDRO, nitoro extension<br><br>2 poteaux 👆👆<br>17/01/2026, 03:00 - Adou:<br>17/01/2026, 03:00 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0008.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0008.jpg" alt="IMG-20260117-WA0008.jpg" onclick="openImageModal('IMG-20260117-WA0008.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0008.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0008.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 03:00 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0009.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0009.jpg" alt="IMG-20260117-WA0009.jpg" onclick="openImageModal('IMG-20260117-WA0009.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0009.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0009.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 03:00 - Adou: *Étude*<br><br><span class="client-name">Client : DAGO BONI JUNIOR </span><br><br>Numéro joignable: 0576670111<br>TN: 2536046529@mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, cité nitro<br><br>2 poteaux 👆👆<br>17/01/2026, 03:02 - Adou:<br>17/01/2026, 03:02 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0010.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0010.jpg" alt="IMG-20260117-WA0010.jpg" onclick="openImageModal('IMG-20260117-WA0010.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0010.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0010.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 03:02 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260117-WA0011.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260117-WA0011.jpg" alt="IMG-20260117-WA0011.jpg" onclick="openImageModal('IMG-20260117-WA0011.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260117-WA0011.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260117-WA0011.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>17/01/2026, 03:03 - Adou: *Étude*<br><br><span class="client-name">Client : DOUE LEHI NESSEKON AIMEE</span><br><br>Numéro joignable: 0565316242<br>TN: 2536050860@mtn.ci<br>SN:ZTEGD9D0AFBB<br>Forfait: 10.000f<br>SAN PEDRO, lac chapelle<br><br>2 poteaux 👆👆<br>20/01/2026, 11:45 - Adou: ‎
+                <div class="image-card">
+                    <div class="image-header">
+                        <span class="image-icon">🖼️</span>
+                        <span class="image-name">📎 IMG-20260120-WA0430.jpg</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="IMG-20260120-WA0430.jpg" alt="IMG-20260120-WA0430.jpg" onclick="openImageModal('IMG-20260120-WA0430.jpg')">
+                    </div>
+                    <div class="image-footer">
+                        <a href="IMG-20260120-WA0430.jpg" target="_blank" class="open-full">Ouvrir en plein</a>
+                        <span class="image-size">Fichier: IMG-20260120-WA0430.jpg</span>
+                    </div>
+                </div>
+                 (fichier joint)<br>20/01/2026, 11:46 - Adou: *Étude*<br><br><span class="client-name">Client: KONE KIDOU ELIAS</span><br>Numéro joignable : 0789761185<br>TN: 2536050798mtn.ci<br>Forfait: 10.000f<br>SAN PEDRO, ÉCOLE MÉTHODISTE<br><br>1 poteaux<br><br>
+        </div>
+    </div>
+    
+    <!-- Modal pour afficher les images en grand -->
+    <div id="imageModal" class="image-modal">
+        <button class="close-modal" onclick="closeImageModal()">×</button>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="Image agrandie">
         </div>
     </div>
     
     <script>
-        // Fonction pour ajouter des classes CSS automatiquement
-        function stylizeContent() {
-            // Styliser les numéros de téléphone
-            const contentDiv = document.querySelector('.content');
-            const textNodes = [];
-            
-            function getTextNodes(node) {
-                if (node.nodeType === 3) {
-                    textNodes.push(node);
-                } else {
-                    for (let child of node.childNodes) {
-                        getTextNodes(child);
-                    }
-                }
-            }
-            
-            getTextNodes(contentDiv);
-            
-            // Ajouter des classes basées sur le contenu
-            textNodes.forEach(node => {
-                const text = node.textContent;
-                const parent = node.parentNode;
-                
-                if (text.includes('Numéro joignable') || /\d10/.test(text)) {
-                    const span = document.createElement('span');
-                    span.className = 'phone-number';
-                    span.textContent = text;
-                    parent.replaceChild(span, node);
-                }
-                
-                if (text.includes('poteau')) {
-                    const span = document.createElement('span');
-                    span.className = 'poteaux-count';
-                    span.textContent = text;
-                    parent.replaceChild(span, node);
-                }
-                
-                if (text.includes('SAN PEDRO')) {
-                    const span = document.createElement('span');
-                    span.className = 'location';
-                    span.textContent = text;
-                    parent.replaceChild(span, node);
-                }
-                
-                if (text.includes('TN:')) {
-                    const span = document.createElement('span');
-                    span.className = 'tn-info';
-                    span.textContent = text;
-                    parent.replaceChild(span, node);
-                }
-                
-                if (text.includes('000f') || text.includes('Forfait:')) {
-                    const span = document.createElement('span');
-                    span.className = 'forfait';
-                    span.textContent = text;
-                    parent.replaceChild(span, node);
-                }
-            });
+        // Fonction pour ouvrir une image en modal
+        function openImageModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = imageSrc;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
         
-        // Exécuter au chargement
+        // Fonction pour fermer le modal
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Fermer le modal en cliquant à l'extérieur
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
+        
+        // Fermer avec la touche Échap
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+        
+        // Vérifier et afficher un message pour les images manquantes
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page WhatsApp chargée');
-            console.log('Médias trouvés :', 196);
-            
-            // Styliser le contenu
-            stylizeContent();
-            
-            // Vérifier les liens médias
-            document.querySelectorAll('.media-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    console.log('Ouverture du média :', this.href);
-                });
+            const images = document.querySelectorAll('.image-preview img');
+            images.forEach(img => {
+                img.onerror = function() {
+                    this.parentElement.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: #666; background: #f5f5f5; border-radius: 6px;">
+                            <div style="font-size: 2em;">🖼️</div>
+                            <div style="margin: 10px 0; font-weight: 500;">Image non trouvée</div>
+                            <div style="font-size: 0.9em; font-family: monospace;">${this.alt}</div>
+                            <a href="${this.src}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background: #e0e0e0; border-radius: 4px; text-decoration: none; color: #333;">
+                                Essayer d'ouvrir le lien
+                            </a>
+                        </div>
+                    `;
+                };
             });
+            
+            console.log('Page avec images intégrées chargée');
         });
     </script>
 </body>

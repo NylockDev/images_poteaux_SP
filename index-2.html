@@ -3,1721 +3,1045 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Système de Gestion FTTH</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e3c72">
-    <!-- CDN pour Chart.js (graphiques) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <!-- CDN pour html2canvas (export image) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- CDN pour jsPDF (export PDF) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Ajout du CDN Tesseract.js pour OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.1/dist/tesseract.min.js"></script>
+    <title>WhatsApp - updatemsg.txt</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f0f2f5;
+            padding: 20px;
             min-height: 100vh;
-            color: #333;
         }
-
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            border-bottom: 3px solid #1e3c72;
-        }
-
-        .header h1 {
-            text-align: center;
-            color: #1e3c72;
-            font-size: 2.5em;
-            font-weight: 300;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            text-align: center;
-            color: #666;
-            font-size: 1.1em;
-        }
-
+        
         .container {
-            max-width: 1400px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .control-panel {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e1e5e9;
-        }
-
-        .tab {
-            padding: 15px 25px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            color: #1e3c72;
-            border-bottom-color: #1e3c72;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .form-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid #1e3c72;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input, select {
-            padding: 12px 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
             background: white;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #1e3c72;
-            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
-        }
-
-        .buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #f44336, #d32f2f);
-            color: white;
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .data-table {
-            background: white;
-            border-radius: 15px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            margin-top: 30px;
         }
-
-        .table-header {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        
+        .header {
+            background: #1877f2;
             color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .search-box {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 25px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        .search-box::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #e1e5e9;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-active {
-            background: #e8f5e8;
-            color: #4CAF50;
-        }
-        .status-tirage {
-            background: #e1f5fe;
-            color: #039be5;
-        }
-        .status-encours {
-            background: #fffde7;
-            color: #fbc02d;
-        }
-        .status-attenteconfig {
-            background: #f3e5f5;
-            color: #8e24aa;
-        }
-        .status-inactif {
-            background: #ececec;
-            color: #757575;
-        }
-        .status-pascredit {
-            background: #ffecb3;
-            color: #ff9800;
-        }
-        .status-noneligible {
-            background: #ffcdd2;
-            color: #b71c1c;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 12px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border-left: 5px solid #1e3c72;
-            transition: transform 0.3s ease;
+            text-align: center;
         }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #1e3c72;
+        
+        .header h1 {
+            font-size: 1.8em;
             margin-bottom: 10px;
         }
-
-        .stat-label {
-            color: #666;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .report-section {
+        
+        .stats {
             background: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            color: #65676b;
+            border-bottom: 1px solid #dddfe2;
+            font-size: 0.95em;
+        }
+        
+        .content {
             padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid #1e3c72;
-        }
-
-        .chart-container {
-            max-width: 600px;
-            margin: 20px auto;
-        }
-
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .report-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .report-table th, .report-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e1e5e9;
-        }
-
-        .report-table th {
-            background: #1e3c72;
-            color: white;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .buttons {
-                flex-direction: column;
-            }
-            .search-box {
-                width: 100%;
-                margin-top: 10px;
-            }
-            .table-header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            table {
-                font-size: 14px;
-            }
-            th, td {
-                padding: 10px;
-            }
-            .report-header {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
-        /* Ajout d'un breakpoint mobile amélioré */
-        @media (max-width: 600px) {
-            .container {
-                padding: 5px 1px;
-            }
-            .control-panel {
-                padding: 5px;
-                margin-bottom: 8px;
-            }
-            .form-section, .report-section {
-                padding: 5px;
-                border-radius: 6px;
-                margin-bottom: 6px;
-            }
-            .form-grid, .stats-grid {
-                grid-template-columns: 1fr;
-                gap: 6px;
-            }
-            .buttons {
-                flex-direction: column;
-                gap: 5px;
-            }
-            .tab {
-                padding: 7px 4px;
-                font-size: 13px;
-            }
-            .tab-content {
-                padding: 2px;
-            }
-            .data-table {
-                margin-top: 5px;
-                border-radius: 6px;
-            }
-            .table-header {
-                flex-direction: column;
-                gap: 5px;
-                padding: 5px;
-            }
-            table {
-                font-size: 11px;
-            }
-            th, td {
-                padding: 4px;
-            }
-            .search-box {
-                width: 100%;
-                margin-top: 2px;
-            }
-            .stat-card {
-                padding: 5px;
-                border-radius: 6px;
-            }
-            .stat-number {
-                font-size: 1.2em;
-            }
-            .report-header {
-                flex-direction: column;
-                gap: 5px;
-            }
-            .chart-container {
-                max-width: 100%;
-                margin: 5px auto;
-            }
-        }
-        /* Amélioration du responsive pour les boutons et formulaires */
-        input, select, button {
+            max-height: 80vh;
+            overflow-y: auto;
             font-size: 15px;
         }
-        label {
-            font-size: 13px;
+        
+        .message-line {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #1877f2;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .timestamp {
+            color: #65676b;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .client-name {
+            color: #1d4ed8;
+            font-weight: 700;
+            background: #dbeafe;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 5px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .phone-number {
+            color: #065f46;
+            font-weight: 600;
+            background: #d1fae5;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin: 3px;
+            display: inline-block;
+        }
+        
+        .poteaux-count {
+            color: white;
+            font-weight: 700;
+            background: #10b981;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin: 5px;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
+        }
+        
+        .media-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 18px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            box-shadow: 0 3px 8px rgba(245, 158, 11, 0.2);
+        }
+        
+        .media-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(245, 158, 11, 0.3);
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+        
+        .location {
+            color: #7c3aed;
+            font-weight: 600;
+            background: #ede9fe;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin: 3px;
+            display: inline-block;
+        }
+        
+        .tn-info {
+            color: #92400e;
+            font-weight: 600;
+            background: #fef3c7;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin: 3px;
+            display: inline-block;
+        }
+        
+        .forfait {
+            color: #dc2626;
+            font-weight: 600;
+            background: #fee2e2;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin: 3px;
+            display: inline-block;
+        }
+        
+        /* Barre de défilement */
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 8px;
+            }
+            
+            .content {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
+            .header h1 {
+                font-size: 1.4em;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Système de Gestion FTTH</h1>
-        <p>Gestion efficace des dossiers d'installation Fibre Optique</p>
-    </div>
-
     <div class="container">
-            <!-- Onglet Gérer Client -->
-            <div id="gerer-client" class="tab-content" style="display:none;">
-                    <div class="form-group" style="margin-top:18px;">
-                        <label><input type="checkbox" id="poteauxImplanterCheck" onchange="togglePoteauxFields()"> Poteaux à implanter</label>
-                        <div id="poteauxFields" style="display:none; margin-top:10px;">
-                            <label for="nombrePoteaux">Nombre de poteaux à implanter :</label>
-                            <input type="number" id="nombrePoteaux" min="1" max="20" value="1">
-                        </div>
-                    </div>
-                <div class="form-section">
-                    <h3 style="margin-bottom: 20px; color: #1e3c72;">
-                        <span id="gererFormTitle">Gérer Client FTTH</span>
-                    </h3>
-                    <div class="form-grid">
-                        <div class="form-group"><label for="gererClientName">Nom et Prénoms</label><input type="text" id="gererClientName"></div>
-                        <div class="form-group"><label for="gererContactPrincipal">Contact Principal</label><input type="tel" id="gererContactPrincipal"></div>
-                        <div class="form-group"><label for="gererContactSecondaire">Contact Secondaire</label><input type="tel" id="gererContactSecondaire"></div>
-                        <div class="form-group"><label for="gererVille">Ville/Commune</label><input type="text" id="gererVille"></div>
-                        <div class="form-group"><label for="gererQuartier">Quartier</label><input type="text" id="gererQuartier"></div>
-                        <div class="form-group"><label for="gererNumeroFTTH">Numéro FTTH</label><input type="text" id="gererNumeroFTTH"></div>
-                        <div class="form-group"><label for="gererStatusInstallation">Statut Installation</label><input type="text" id="gererStatusInstallation"></div>
-                        <div class="form-group"><label for="gererDateInstallation">Date Installation</label><input type="date" id="gererDateInstallation"></div>
-                    </div>
-                    <hr style="margin:25px 0;">
-                    <h3 style="color:#1e3c72; margin-bottom:10px;">Images à ajouter</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Box Recto</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'gererBoxRecto')">
-                            <img id="gererBoxRecto" style="width:100%;max-width:300px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Box Verso</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'gererBoxVerso')">
-                            <img id="gererBoxVerso" style="width:100%;max-width:300px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Photo du Reçu</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'gererRecuPhoto')">
-                            <img id="gererRecuPhoto" style="width:100%;max-width:300px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Photo du PB</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'gererPbPhoto')">
-                            <img id="gererPbPhoto" style="width:100%;max-width:300px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Emplacement Poteaux</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'gererPoteauxPhoto')">
-                            <img id="gererPoteauxPhoto" style="width:100%;max-width:300px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                    </div>
-                    <hr style="margin:25px 0;">
-                    <h3 style="color:#1e3c72; margin-bottom:10px;">Matériel utilisé</h3>
-                    <div class="form-grid">
-                        <div class="form-group"><label>Mètre de câble</label><input type="number" id="gererMetreCable" min="0"></div>
-                        <div class="form-group"><label>Pinces tendeurs</label><input type="number" id="gererPincesTendeurs" min="0"></div>
-                        <div class="form-group"><label>Colliers</label><input type="number" id="gererColliers" min="0"></div>
-                        <div class="form-group"><label>Attaches murales</label><input type="number" id="gererAttachesMurales" min="0"></div>
-                        <div class="form-group"><label>Smoov</label><input type="number" id="gererSmoov" min="0"></div>
-                        <div class="form-group"><label>PTO</label><input type="number" id="gererPTO" min="0"></div>
-                        <div class="form-group"><label>Python</label><input type="number" id="gererPython" min="0"></div>
-                        <div class="form-group"><label>Gaines annelées</label><input type="number" id="gererGainesAnnelees" min="0"></div>
-                        <div class="form-group"><label>Jarretière</label><input type="number" id="gererJarretiere" min="0"></div>
-                    </div>
-                    <div class="buttons" style="margin-top:20px;">
-                        <button class="btn-success" type="button" onclick="saveGererClient()">Enregistrer</button>
-                        <button class="btn-primary" type="button" onclick="copierBilanGererClient()">Copier Bilan</button>
-                        <button class="btn-warning" type="button" onclick="exporterBilanGererClient()">Exporter Bilan</button>
-                        <button class="btn-danger" type="button" onclick="genererBilanComplet()">Bilan Complet</button>
-                    </div>
-                </div>
-            </div>
-        <!-- MODALE GESTION CLIENT -->
-        <div id="gestionModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(30,60,114,0.15); z-index:9999; justify-content:center; align-items:center;">
-            <div style="background:white; border-radius:20px; max-width:700px; width:95%; margin:auto; box-shadow:0 10px 40px rgba(30,60,114,0.15); padding:35px 30px; position:relative;">
-                <button onclick="closeGestionModal()" style="position:absolute; top:18px; right:18px; background:#f44336; color:white; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; cursor:pointer;">&times;</button>
-                <h2 style="color:#1e3c72; margin-bottom:18px;">Gérer le Client</h2>
-                <form id="gestionForm" autocomplete="off" onsubmit="event.preventDefault(); saveGestionClient();">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="gestionClientName">Nom et Prénoms</label>
-                            <input type="text" id="gestionClientName">
-                        </div>
-                        <div class="form-group">
-                            <label for="gestionContactPrincipal">Contact Principal</label>
-                            <input type="tel" id="gestionContactPrincipal">
-                        </div>
-                        <div class="form-group">
-                            <label for="gestionContactSecondaire">Contact Secondaire</label>
-                            <input type="tel" id="gestionContactSecondaire">
-                        </div>
-                        <div class="form-group">
-                            <label for="gestionVille">Ville/Commune</label>
-                            <input type="text" id="gestionVille">
-                        </div>
-                        <div class="form-group">
-                            <label for="gestionQuartier">Quartier</label>
-                            <input type="text" id="gestionQuartier">
-                        </div>
-                        <div class="form-group">
-                            <label for="gestionNumeroFTTH">Numéro FTTH</label>
-                            <input type="text" id="gestionNumeroFTTH">
-                        </div>
-                        <div class="form-group">
-                            <label for="gestionStatusInstallation">Statut Installation</label>
-                            <input type="text" id="gestionStatusInstallation">
-                        </div>
-                        <div class="form-group">
-                            <label for="gestionDateInstallation">Date Installation</label>
-                            <input type="date" id="gestionDateInstallation">
-                        </div>
-                    </div>
-                    <hr style="margin:25px 0;">
-                    <h3 style="color:#1e3c72; margin-bottom:10px;">Images à ajouter</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Box Recto</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'boxRecto')">
-                            <img id="boxRecto" style="width:100%;max-width:120px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Box Verso</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'boxVerso')">
-                            <img id="boxVerso" style="width:100%;max-width:120px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Photo du Reçu</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'recuPhoto')">
-                            <img id="recuPhoto" style="width:100%;max-width:120px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Photo du PB</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'pbPhoto')">
-                            <img id="pbPhoto" style="width:100%;max-width:120px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                        <div class="form-group">
-                            <label>Emplacement Poteaux</label>
-                            <input type="file" accept="image/*" onchange="previewImage(event, 'poteauxPhoto')">
-                            <img id="poteauxPhoto" style="width:100%;max-width:120px;margin-top:8px;border-radius:8px;display:none;" />
-                        </div>
-                    </div>
-                    <hr style="margin:25px 0;">
-                    <h3 style="color:#1e3c72; margin-bottom:10px;">Matériel utilisé</h3>
-                    <div class="form-grid">
-                        <div class="form-group"><label>Mètre de câble</label><input type="number" id="metreCable" min="0"></div>
-                        <div class="form-group"><label>Pinces tendeurs</label><input type="number" id="pincesTendeurs" min="0"></div>
-                        <div class="form-group"><label>Colliers</label><input type="number" id="colliers" min="0"></div>
-                        <div class="form-group"><label>Attaches murales</label><input type="number" id="attachesMurales" min="0"></div>
-                        <div class="form-group"><label>Smoov</label><input type="number" id="smoov" min="0"></div>
-                        <div class="form-group"><label>PTO</label><input type="number" id="pto" min="0"></div>
-                        <div class="form-group"><label>Python</label><input type="number" id="python" min="0"></div>
-                        <div class="form-group"><label>Gaines annelées</label><input type="number" id="gainesAnnelees" min="0"></div>
-                        <div class="form-group"><label>Jarretière</label><input type="number" id="jarretiere" min="0"></div>
-                    </div>
-                    <div class="buttons" style="margin-top:20px;">
-                        <button class="btn-success" type="submit">Enregistrer</button>
-                        <button class="btn-primary" type="button" onclick="copierBilanClient()">Copier Bilan</button>
-                        <button class="btn-warning" type="button" onclick="exporterBilanClient()">Exporter Bilan</button>
-                        <button class="btn-danger" type="button" onclick="genererBilanComplet()">Bilan Complet</button>
-                    </div>
-                </form>
-            </div>
+        <div class="header">
+            <h1>📱 poteaux implantés San Pedro</h1>
+            <p style="opacity: 0.9; font-size: 0.95em;">updatemsg.txt</p>
         </div>
-        <div class="control-panel">
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('dashboard')">Tableau de Bord</button>
-                <button class="tab" onclick="switchTab('add-client')">Ajouter Client</button>
-                <button class="tab" onclick="switchTab('manage')">Gestion</button>
-                <button class="tab" onclick="switchTab('gerer-client')">Gérer Client</button>
-                <button class="tab" onclick="switchTab('export')">Export & Rapports</button>
-            </div>
-
-            <!-- Dashboard Tab -->
-            <div id="dashboard" class="tab-content active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalClients">0</div>
-                        <div class="stat-label">Total Clients</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="activeInstallations">0</div>
-                        <div class="stat-label">Installations Actives</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="pendingInstallations">0</div>
-                        <div class="stat-label">En Attente</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="completedToday">0</div>
-                        <div class="stat-label">Terminées Aujourd'hui</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add Client Tab -->
-            <div id="add-client" class="tab-content">
-                <div class="form-section">
-                    <h3 style="margin-bottom: 20px; color: #1e3c72;">
-                        <span id="formTitle">Nouveau Client FTTH</span>
-                    </h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="clientName">Nom et Prénoms *</label>
-                            <input type="text" id="clientName" placeholder="Ex: TOHOUA HERVE OSCAR" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contactPrincipal">Contact Principal *</label>
-                            <input type="tel" id="contactPrincipal" placeholder="Ex: 0555588630" pattern="[0-9]{10}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contactSecondaire">Contact Secondaire</label>
-                            <input type="tel" id="contactSecondaire" placeholder="Ex: 0585530043" pattern="[0-9]{10}">
-                        </div>
-                        <div class="form-group">
-                            <label for="ville">Ville/Commune *</label>
-                            <select id="ville" required>
-                                <option value="">Sélectionner...</option>
-                                <option value="ABOBO">ABOBO</option>
-                                <option value="ADJAME">ADJAME</option>
-                                <option value="COCODY">COCODY</option>
-                                <option value="YOPOUGON">YOPOUGON</option>
-                                <option value="MARCORY">MARCORY</option>
-                                <option value="TREICHVILLE">TREICHVILLE</option>
-                                <option value="PLATEAU">PLATEAU</option>
-                                <option value="PORT-BOUET">PORT-BOUET</option>
-                                <option value="KOUMASSI">KOUMASSI</option>
-                                <option value="BINGERVILLE">BINGERVILLE</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="quartier">Quartier d'habitation</label>
-                            <input type="text" id="quartier" placeholder="Ex: Bandji nouvelle cassee">
-                        </div>
-                        <div class="form-group">
-                            <label for="numeroFTTH">Numéro FTTH (TN)</label>
-                            <input type="text" id="numeroFTTH" placeholder="Ex: 2536070716@mtn.ci">
-                        </div>
-                        <div class="form-group">
-                            <label for="statusInstallation">Statut Installation</label>
-                            <select id="statusInstallation">
-                                <option value="pending">En attente</option>
-                                <option value="tirage">Tirage</option>
-                                <option value="encours">En cours</option>
-                                <option value="attenteconfig">En attente de configuration</option>
-                                <option value="connexionactive">Connexion active</option>
-                                <option value="inactif">Connexion inactive</option>
-                                <option value="pascredit">Pas de crédit</option>
-                                <option value="noneligible">Non éligible</option>
-                                <option value="completed">Terminée</option>
-                                <option value="cancelled">Annulée</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="dateInstallation">Date d'Installation</label>
-                            <input type="date" id="dateInstallation">
-                        </div>
-                    </div>
-                    <div class="buttons">
-                        <button class="btn-primary" onclick="addClient()">
-                            <span id="saveButtonText">Ajouter Client</span>
-                        </button>
-                        <button class="btn-warning" onclick="clearAddForm()">Effacer</button>
-                        <!-- Nouveau bouton pour importer depuis une image -->
-                        <input type="file" id="imageImport" accept="image/*" style="display:none" onchange="importClientsFromImage(event)">
-                        <button class="btn-success" onclick="document.getElementById('imageImport').click()">Importer depuis une image</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Manage Tab -->
-            <div id="manage" class="tab-content">
-                <div class="buttons">
-                    <button class="btn-success" onclick="loadSampleData()">Charger Données Exemple</button>
-                    <button class="btn-warning" onclick="exportToCSV()">Exporter CSV</button>
-                    <button class="btn-danger" onclick="clearAllData()">Effacer Tout</button>
-                </div>
-            </div>
-
-            <!-- Export & Reports Tab -->
-            <div id="export" class="tab-content">
-                <div class="export-section">
-                    <h3 style="margin-bottom: 20px; color: #1e3c72;">Options d'Export</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="exportFormat">Format d'Export</label>
-                            <select id="exportFormat">
-                                <option value="csv">CSV (Excel)</option>
-                                <option value="json">JSON</option>
-                                <option value="txt">Texte</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="exportFilter">Filtrer par Statut</label>
-                            <select id="exportFilter">
-                                <option value="all">Tous</option>
-                                <option value="active">Actifs</option>
-                                <option value="pending">En Attente</option>
-                                <option value="completed">Terminés</option>
-                                <option value="cancelled">Annulés</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="buttons">
-                        <button class="btn-primary" onclick="performExport()">Télécharger Export</button>
-                        <button class="btn-success" onclick="copyToClipboard()">Copier Données</button>
-                    </div>
-                </div>
-                <div class="report-section">
-                    <div class="report-header">
-                        <h3 style="color: #1e3c72;">Rapport des Statuts</h3>
-                        <div class="buttons">
-                            <select id="reportPeriod" onchange="generateReport()">
-                                <option value="all">Toutes les périodes</option>
-                                <option value="today">Aujourd'hui</option>
-                                <option value="week">Cette semaine</option>
-                                <option value="month">Ce mois</option>
-                            </select>
-                            <button class="btn-primary" onclick="exportReportAsImage()">Exporter Image</button>
-                            <button class="btn-success" onclick="exportReportAsPDF()">Exporter PDF</button>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>Statut</th>
-                                <th>Nombre</th>
-                                <th>Pourcentage</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
+        
+        <div class="stats">
+            📊 196 fichiers médias(POTEAUX) • 49 clients
         </div>
+        
+        <div class="content">
+            12/01/2026, 16:50 - Adou: ‎<a href="IMG-20251112-WA0225.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0225.jpg</a> (fichier joint)<br>
+12/01/2026, 16:51 - Adou: Yao n'guessan <br>
+0505965353<br>
+TN 2536078962<br>
+<br>
+1 poteau<br>
+12/01/2026, 16:55 - Adou: <br>
+12/01/2026, 16:55 - Adou: ‎<a href="IMG-20251113-WA0379.jpg" class="media-link" target="_blank">📎 IMG-20251113-WA0379.jpg</a> (fichier joint)<br>
+12/01/2026, 16:55 - Adou: <span class="client-name">Client : ZIAN GONDO GUY</span><br>
+Numéro joignable: 0546539646<br>
+TN: 2536069117@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, lac pave <br>
+<br>
+1 poteau<br>
+12/01/2026, 16:56 - Adou: ‎<a href="IMG-20251112-WA0059.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0059.jpg</a> (fichier joint)<br>
+12/01/2026, 16:56 - Adou: <span class="client-name">Client : TANO BADJO RACHEL RUTH</span><br>
+Numéro joignable: 0596450760<br>
+TN: 2536069355<br>
+@mtn.ci<br>
+ 1 poteau <Ce message a été modifié><br>
+12/01/2026, 16:58 - Adou: ‎<a href="IMG-20251114-WA0381.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0381.jpg</a> (fichier joint)<br>
+12/01/2026, 16:58 - Adou: <span class="client-name">Client : gohou dago pierre</span><br>
+Numéro joignable: 0586828288<br>
+TN: 2536068996@mtn.ci<br>
+SAN PEDRO, jul fery<br>
+13/01/2026, 05:00 - Adou: ‎<a href="IMG-20251115-WA0247.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0247.jpg</a> (fichier joint)<br>
+13/01/2026, 05:00 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : boue ponnin eleonore</span><br>
+Numéro joignable: 0508670266<br>
+TN: 2536068761@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, <br>
+<br>
+1 poteau<br>
+image 👆👆👆👆 <Ce message a été modifié><br>
+13/01/2026, 05:01 - Adou: ‎<a href="IMG-20251115-WA0245.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0245.jpg</a> (fichier joint)<br>
+13/01/2026, 05:01 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : GAHA DJIE JEAN LUC</span><br>
+Numéro joignable: 0566052381<br>
+TN: 2536079824@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO,  francophonie <br>
+<br>
+1 poteau <Ce message a été modifié><br>
+13/01/2026, 05:02 - Adou: <br>
+13/01/2026, 05:02 - Adou: ‎<a href="IMG-20251115-WA0242.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0242.jpg</a> (fichier joint)<br>
+13/01/2026, 05:02 - Adou: ‎<a href="IMG-20251115-WA0243.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0243.jpg</a> (fichier joint)<br>
+13/01/2026, 05:02 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : BAKARI KOSSIA MANDJALA</span><br>
+Numéro joignable: 0508670280<br>
+TN: 2536067405@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO,  lac classic<br>
+<br>
+2 poteaux <br>
+<br>
+👆👆👆<br>
+13/01/2026, 05:03 - Adou: ‎<a href="IMG-20251115-WA0005.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0005.jpg</a> (fichier joint)<br>
+13/01/2026, 05:03 - Adou: TEAM STI<br>
+<br>
+ETUDE<br>
+<br>
+<span class="client-name">CLIENT :  n'guessan koffi hubert</span><br>
+NUMERO JOINABBLE: 0576230148<br>
+FORFAIT: 10.000F<br>
+TN: 2536068146<br>
+SAN PEDRO jul fery <br>
+<br>
+* 1 poteau <br>
+* 👆👆👆 <Ce message a été modifié><br>
+13/01/2026, 05:04 - Adou: ‎<a href="IMG-20251118-WA0083.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0083.jpg</a> (fichier joint)<br>
+13/01/2026, 05:04 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : FLORA CARINE BOTTI</span><br>
+Numéro joignable: 0505920116<br>
+TN: 2536068867<br>
+@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO,  cité bahia<br>
+<br>
+1 poteau <br>
+Image☝🏼☝🏼☝🏼☝🏼<br>
+13/01/2026, 05:05 - Adou: ‎<a href="IMG-20251119-WA0338.jpg" class="media-link" target="_blank">📎 IMG-20251119-WA0338.jpg</a> (fichier joint)<br>
+13/01/2026, 05:06 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: DAGO TANHO SEVERIN</span><br>
+Numéro joignable: 054850273<br>
+TN: 2536041655@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO,  jul fery<br>
+<br>
+1 poteau <br>
+<br>
+👆👆👆<br>
+13/01/2026, 05:06 - Adou: ‎<a href="IMG-20251119-WA0372.jpg" class="media-link" target="_blank">📎 IMG-20251119-WA0372.jpg</a> (fichier joint)<br>
+13/01/2026, 05:06 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : ouattara mikitta bignon</span><br>
+Numéro joignable: 0596845655<br>
+TN: 2536068636@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO,  nitoro château <br>
+<br>
+1 poteau <br>
+,👆👆👆👆<br>
+13/01/2026, 05:08 - Adou: ‎<a href="IMG-20251120-WA0326.jpg" class="media-link" target="_blank">📎 IMG-20251120-WA0326.jpg</a> (fichier joint)<br>
+13/01/2026, 05:08 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : tra bi zinla bertin </span><br>
+Numéro joignable: 0759262579<br>
+TN: 2536079260@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, nitoro <br>
+<br>
+1 poteau <br>
+<br>
+👆👆👆 <Ce message a été modifié><br>
+13/01/2026, 05:11 - Adou: ‎<a href="IMG-20251122-WA0237.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0237.jpg</a> (fichier joint)<br>
+13/01/2026, 05:12 - Adou: <br>
+13/01/2026, 05:12 - Adou: ‎<a href="IMG-20251122-WA0232.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0232.jpg</a> (fichier joint)<br>
+13/01/2026, 05:12 - Adou: ‎<a href="IMG-20251122-WA0234.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0234.jpg</a> (fichier joint)<br>
+13/01/2026, 05:12 - Adou: ‎<a href="IMG-20251122-WA0233.jpg" class="media-link" target="_blank">📎 IMG-20251122-WA0233.jpg</a> (fichier joint)<br>
+13/01/2026, 05:13 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : N'GUESSAN KOUASSI FRANCK ANI </span><br>
+Numéro joignable: 0585779215<br>
+TN: 2536042132@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, cité<br>
+<br>
+*Étude*<br>
+<br>
+<span class="client-name">Client : kohon poegnon michelle</span><br>
+Numéro joignable: 0508676628<br>
+TN: 2536068089<br>
+@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO,  cité <br>
+<br>
+4 poteaux <br>
+<br>
+👆👆<br>
+13/01/2026, 05:14 - Adou: ‎<a href="IMG-20251125-WA0278.jpg" class="media-link" target="_blank">📎 IMG-20251125-WA0278.jpg</a> (fichier joint)<br>
+13/01/2026, 05:14 - Adou: ‎<a href="IMG-20251125-WA0279.jpg" class="media-link" target="_blank">📎 IMG-20251125-WA0279.jpg</a> (fichier joint)<br>
+13/01/2026, 05:15 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : WADJA AMOUA OLGA</span><br>
+<br>
+Numéro joignable: 0707986838<br>
+TN: 2536043089@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, lac pave<br>
+<br>
+2 poteaux <br>
+<br>
+👆👆👆👆<br>
+13/01/2026, 05:15 - Adou: <br>
+13/01/2026, 05:15 - Adou: ‎<a href="IMG-20251126-WA0226.jpg" class="media-link" target="_blank">📎 IMG-20251126-WA0226.jpg</a> (fichier joint)<br>
+13/01/2026, 05:15 - Adou: ‎<a href="IMG-20251126-WA0227.jpg" class="media-link" target="_blank">📎 IMG-20251126-WA0227.jpg</a> (fichier joint)<br>
+13/01/2026, 05:16 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : KOFFI BOAMI MARTIN</span><br>
+<br>
+Numéro joignable: 0505462140<br>
+TN: 2536042080@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, nitoro <br>
+<br>
+2 poteaux <br>
+<br>
+👆👆👆👆👆<br>
+13/01/2026, 05:16 - Adou: ‎<a href="IMG-20251127-WA0220.jpg" class="media-link" target="_blank">📎 IMG-20251127-WA0220.jpg</a> (fichier joint)<br>
+13/01/2026, 05:17 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : TENIN ZEAN HYACINTH </span><br>
+<br>
+Numéro joignable: 0501296677<br>
+TN: 2536068331@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, FRANCOPHONIE<br>
+<br>
+1 poteau <br>
+👆👆👆<br>
+13/01/2026, 05:26 - Adou: ‎<a href="IMG-20251204-WA0110.jpg" class="media-link" target="_blank">📎 IMG-20251204-WA0110.jpg</a> (fichier joint)<br>
+13/01/2026, 05:26 - Adou: ‎<a href="IMG-20251204-WA0111.jpg" class="media-link" target="_blank">📎 IMG-20251204-WA0111.jpg</a> (fichier joint)<br>
+13/01/2026, 05:26 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : YAO AKOUBA PATRICIA </span><br>
+<br>
+Numéro joignable: 0585047420<br>
+TN: 2536047018@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, LAC FRANCOPHONIE <br>
+<br>
+2 poteaux <br>
+<br>
+👆👆👆 <Ce message a été modifié><br>
+13/01/2026, 05:31 - Adou: ‎<a href="IMG-20251213-WA0004.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0004.jpg</a> (fichier joint)<br>
+13/01/2026, 05:31 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : YOUKOU MILANWOIN</span><br>
+<br>
+Numéro joignable: 0708387314<br>
+TN: 2536045301@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, nitoro<br>
+<br>
+1 poteau <br>
+👆👆👆👆<br>
+13/01/2026, 05:34 - Adou: ‎<a href="IMG-20251216-WA0144.jpg" class="media-link" target="_blank">📎 IMG-20251216-WA0144.jpg</a> (fichier joint)<br>
+ZADI HONNON ALICE GOZE PLANTATION D'UN POTEAU<br>
+13/01/2026, 05:35 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : zadi honnon Alice goze</span><br>
+<br>
+Numéro joignable: 0140947108<br>
+TN: 2536048510@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, NITORO <br>
+<br>
+1 poteau 👆👆👆👆👆<br>
+13/01/2026, 05:38 - Adou: <br>
+13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0187.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0187.jpg</a> (fichier joint)<br>
+13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0188.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0188.jpg</a> (fichier joint)<br>
+13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0189.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0189.jpg</a> (fichier joint)<br>
+13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0190.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0190.jpg</a> (fichier joint)<br>
+13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0191.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0191.jpg</a> (fichier joint)<br>
+13/01/2026, 05:38 - Adou: ‎<a href="IMG-20251215-WA0192.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0192.jpg</a> (fichier joint)<br>
+13/01/2026, 05:44 - Adou: ETUDE<br>
+<br>
+WAYE TCHROUIN<br>
+<br>
+0594932244<br>
+SAN PEDRO, BALMER DERNIER HOTEL AIBA<br>
+TN: 2536043843@mtn.ci<br>
+SN :<br>
+485754435D51E6B5<br>
+<br>
+ÉTUDE<br>
+<br>
+YOH GNOLEBA JULES DONALD<br>
+<br>
+0586943400<br>
+SAN PEDRO, BALMER DERRIERE HOTEL AYIBA<br>
+<br>
+*Étude*<br>
+<br>
+<span class="client-name">Client: KONE ABDOULAYE KLOFIE</span><br>
+Numéro joignable : +2250709128430<br>
+TN: 2536047855@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, LAC AHIBA <br>
+<br>
+       *6 poteaux*<br>
+<br>
+<br>
+👆👆👆👆👆👆👆<br>
+13/01/2026, 05:46 - Adou: <br>
+13/01/2026, 05:46 - Adou: ‎<a href="IMG-20251217-WA0069.jpg" class="media-link" target="_blank">📎 IMG-20251217-WA0069.jpg</a> (fichier joint)<br>
+13/01/2026, 05:46 - Adou: ‎<a href="IMG-20251217-WA0070.jpg" class="media-link" target="_blank">📎 IMG-20251217-WA0070.jpg</a> (fichier joint)<br>
+13/01/2026, 05:47 - Adou: <span class="client-name">Client : LATTE PATRICK</span><br>
+<br>
+Numéro joignable: 0747277742<br>
+TN: 2536050786@mtn.ci<br>
+SN: 485754435D5723B5<br>
+Forfait: 10.000f <br>
+SAN PEDRO, nitoro extension derrière l’église Assemblée de Dieu<br>
+<br>
+<br>
+NB: 2 poteaux métalliques à implanter<br>
+👆👆👆<br>
+13/01/2026, 05:52 - Adou: <br>
+13/01/2026, 05:52 - Adou: ‎<a href="IMG-20251220-WA0085.jpg" class="media-link" target="_blank">📎 IMG-20251220-WA0085.jpg</a> (fichier joint)<br>
+13/01/2026, 05:52 - Adou: ‎<a href="IMG-20251220-WA0086.jpg" class="media-link" target="_blank">📎 IMG-20251220-WA0086.jpg</a> (fichier joint)<br>
+13/01/2026, 05:53 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : ADOU AKOUA ANGE MARIE</span><br>
+<br>
+Numéro joignable: 0566959542/0749231182<br>
+TN: 2536046688@mtn.ci<br>
+<br>
+<br>
+NB: 2 poteau à Implanter<br>
+13/01/2026, 06:09 - Adou: <br>
+13/01/2026, 06:09 - Adou: ‎<a href="IMG-20260108-WA0272.jpg" class="media-link" target="_blank">📎 IMG-20260108-WA0272.jpg</a> (fichier joint)<br>
+13/01/2026, 06:09 - Adou: ‎<a href="IMG-20260108-WA0273.jpg" class="media-link" target="_blank">📎 IMG-20260108-WA0273.jpg</a> (fichier joint)<br>
+13/01/2026, 06:10 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : KOUAME FREDY</span><br>
+<br>
+Numéro joignable: 0708015627<br>
+TN: 2536040647@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, BALMER<br>
+<br>
+2 poteaux <br>
+👆👆👆<br>
+13/01/2026, 06:10 - Adou: ‎<a href="IMG-20260112-WA0169.jpg" class="media-link" target="_blank">📎 IMG-20260112-WA0169.jpg</a> (fichier joint)<br>
+13/01/2026, 06:11 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: YAO YEBOUA JONAS</span><br>
+Numéro joignable : 0747996918<br>
+TN: 2536049294@mtn.ci<br>
+SN:485754435D4E96B5<br>
+Forfait: 15.000f <br>
+  SAN PEDRO CITE, VERS LA POSTE<br>
+<br>
+1 poteau <br>
+<br>
+👆👆👆<br>
+13/01/2026, 08:44 - Adou: ‎<a href="IMG-20260113-WA0002.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0002.jpg</a> (fichier joint)<br>
+13/01/2026, 08:45 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : ALI ATIEH</span><br>
+<br>
+Numéro joignable: 0709281324<br>
+TN: 2536048785@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, NITORO<br>
+<br>
+1 poteau<br>
+13/01/2026, 15:39 - Adou: ‎<a href="IMG-20260113-WA0248.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0248.jpg</a> (fichier joint)<br>
+Poteau KONAN KOUASSIHILAIRE<br>
+13/01/2026, 15:40 - Adou: <span class="client-name">Client: KONAN KOUASSI HILAIRE</span><br>
+Numéro joignable : 0142732310/0709119198<br>
+TN: 2536048860@mtn.ci<br>
+Forfait: 10.000f <br>
+  Lac en face de la pharmacie <br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 08:27 - Adou: ‎<a href="IMG-20251201-WA0250.jpg" class="media-link" target="_blank">📎 IMG-20251201-WA0250.jpg</a> (fichier joint)<br>
+01 poteau implanté<br>
+14/01/2026, 08:28 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: AGBOHOUN GUEGUEHI MARTIAL </span><br>
+Numéro joignable : 0708151060<br>
+TN: 2536068897@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, Commissariat 1er arrondissement <br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 20:51 - Adou: ‎<a href="IMG-20260113-WA0245.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0245.jpg</a> (fichier joint)<br>
+Poteau VOH LOU  GADOUNAN<br>
+14/01/2026, 20:52 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : VOH LOU GADOUNAN BENEDICTE</span><br>
+<br>
+Numéro joignable: 0748787895<br>
+TN: 2536040449@mtn.ci<br>
+<br>
+ 1 poteau 👆👆👆<br>
+14/01/2026, 20:53 - Adou: ‎<a href="IMG-20260113-WA0246.jpg" class="media-link" target="_blank">📎 IMG-20260113-WA0246.jpg</a> (fichier joint)<br>
+POTEAU  GNADOU LIDY ANNE AXELLE<br>
+14/01/2026, 20:53 - Adou: <span class="client-name">Client : GNADOU LIDY ANNE AXELLE</span><br>
+<br>
+Numéro joignable: 0594449565<br>
+TN: 2536047695@mtn.ci<br>
+<br>
+Forfait: 10.000f <br>
+SAN PEDRO, cité soccoce<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:02 - Adou: <br>
+14/01/2026, 21:02 - Adou: ‎<a href="IMG-20251202-WA0314.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0314.jpg</a> (fichier joint)<br>
+14/01/2026, 21:02 - Adou: ‎<a href="IMG-20251202-WA0317.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0317.jpg</a> (fichier joint)<br>
+14/01/2026, 21:03 - Adou: 'Nom du <span class="client-name">CLIENT : OUATTARA GNINWOYO EDITH</span><br>
+- NUMÉRO: 0508673950<br>
+- TN: *2536040885@mtn.ci*<br>
+<br>
+2 poteaux 👆👆<br>
+14/01/2026, 21:03 - Adou: <br>
+14/01/2026, 21:04 - Adou: ‎<a href="IMG-20251202-WA0315.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0315.jpg</a> (fichier joint)<br>
+14/01/2026, 21:04 - Adou: ‎<a href="IMG-20251202-WA0316.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0316.jpg</a> (fichier joint)<br>
+14/01/2026, 21:04 - Adou: 'Nom du <span class="client-name">CLIENT : SIBY ANNE CHRISTELLE </span><br>
+- NUMÉRO: 0506896454<br>
+- TN: *2536045870@mtn.ci*<br>
+2 poteaux 👆👆👆<br>
+14/01/2026, 21:07 - Adou: ‎<a href="IMG-20251112-WA0463.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0463.jpg</a> (fichier joint)<br>
+14/01/2026, 21:07 - Adou: Nom du <span class="client-name">CLIENT :ABOTOR SEWA AKO</span><br>
+<br>
+- NUMÉRO: 0748205637<br>
+- TN: *2536069352@mtn.ci*<br>
+<br>
+ 1 poteau 👆👆👆👆<br>
+14/01/2026, 21:11 - Adou: ‎<a href="IMG-20251112-WA0460.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0460.jpg</a> (fichier joint)<br>
+14/01/2026, 21:12 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: ZOKOU GRAH THIERRY ROLAND </span><br>
+Numéro joignable :0708190989<br>
+TN: 2536040292@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, NITORO<br>
+<br>
+1 poteau👆👆👆<br>
+14/01/2026, 21:13 - Adou: <br>
+14/01/2026, 21:13 - Adou: ‎<a href="IMG-20251112-WA0461.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0461.jpg</a> (fichier joint)<br>
+14/01/2026, 21:13 - Adou: ‎<a href="IMG-20251112-WA0462.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0462.jpg</a> (fichier joint)<br>
+14/01/2026, 21:13 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: KOUAME RODRIGUE ARMEL YAO</span><br>
+Numéro joignable :0708631945<br>
+TN: 2536068863@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, NITORO<br>
+<br>
+2 poteaux 👆👆<br>
+14/01/2026, 21:15 - Adou: ‎<a href="IMG-20251113-WA0378.jpg" class="media-link" target="_blank">📎 IMG-20251113-WA0378.jpg</a> (fichier joint)<br>
+14/01/2026, 21:15 - Adou: Nom du <span class="client-name">CLIENT : KAWONAMAN CLINTCHO TOURE </span><br>
+<br>
+- NUMÉRO: 0709098371<br>
+- TN: *2536040198@mtn.ci*<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:17 - Adou: ‎<a href="IMG-20260114-WA0290.jpg" class="media-link" target="_blank">📎 IMG-20260114-WA0290.jpg</a> (fichier joint)<br>
+14/01/2026, 21:17 - Adou: <span class="client-name">Client: YAO CEDRIC PIERRE   EMMAN</span><br>
+Numéro joignable : 0714347579<br>
+TN: 2536079795@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, NITERO<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:20 - Adou: <br>
+14/01/2026, 21:20 - Adou: ‎<a href="IMG-20251112-WA0461.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0461.jpg</a> (fichier joint)<br>
+14/01/2026, 21:20 - Adou: ‎<a href="IMG-20251112-WA0462.jpg" class="media-link" target="_blank">📎 IMG-20251112-WA0462.jpg</a> (fichier joint)<br>
+14/01/2026, 21:20 - Adou: <span class="client-name">Client: KOUAME RODRIGUE ARMEL YAO</span><br>
+Numéro joignable :0708631945<br>
+TN: 2536068863@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, NITORO<br>
+<br>
+2 poteaux 👆👆👆<br>
+14/01/2026, 21:21 - Adou: ‎<a href="IMG-20251113-WA0378.jpg" class="media-link" target="_blank">📎 IMG-20251113-WA0378.jpg</a> (fichier joint)<br>
+14/01/2026, 21:22 - Adou: Nom du <span class="client-name">CLIENT :GUEUGUEU MIRIAM KATO </span><br>
+<br>
+- NUMÉRO: 0779301075<br>
+- TN: *2536069418@mtn.ci*<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:23 - Adou: ‎<a href="IMG-20251114-WA0391.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0391.jpg</a> (fichier joint)<br>
+14/01/2026, 21:23 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : POMBO HENRI JEAN THOMAS </span><br>
+Numéro joignable: 0708340369<br>
+TN: 2536067595@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, CITÉ <br>
+<br>
+1 poteau 👆👆<br>
+14/01/2026, 21:24 - Adou: ‎<a href="IMG-20251114-WA0395.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0395.jpg</a> (fichier joint)<br>
+14/01/2026, 21:24 - Adou: 'Nom du <span class="client-name">CLIENT : IKENNA ISAIAN</span><br>
+- NUMÉRO: 0709805717<br>
+- TN: *2536079799@mtn.ci*<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:25 - Adou: ‎<a href="IMG-20251114-WA0396.jpg" class="media-link" target="_blank">📎 IMG-20251114-WA0396.jpg</a> (fichier joint)<br>
+14/01/2026, 21:25 - Adou: 'Nom du <span class="client-name">CLIENT : Mde Kouadio </span><br>
+- NUMÉRO: 0585322656<br>
+- TN: *2536079865@mtn.ci*<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:26 - Adou: ‎<a href="IMG-20251115-WA0252.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0252.jpg</a> (fichier joint)<br>
+14/01/2026, 21:26 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: BABA OULEHONON ANNE REBECCA </span><br>
+Numéro joignable : 0749506322<br>
+TN: 2536079038@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, NITORO<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:27 - Adou: ‎<a href="IMG-20251115-WA0253.jpg" class="media-link" target="_blank">📎 IMG-20251115-WA0253.jpg</a> (fichier joint)<br>
+14/01/2026, 21:27 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: YAO KOUAME ISAAC </span><br>
+Numéro joignable : 0709781020<br>
+TN: 2536068802@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, LAC PHARMACIE <br>
+<br>
+1 poteau,👆👆<br>
+14/01/2026, 21:29 - Adou: <br>
+14/01/2026, 21:29 - Adou: ‎<a href="IMG-20251118-WA0419.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0419.jpg</a> (fichier joint)<br>
+14/01/2026, 21:29 - Adou: ‎<a href="IMG-20251118-WA0420.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0420.jpg</a> (fichier joint)<br>
+14/01/2026, 21:29 - Adou: ‎<a href="IMG-20251118-WA0421.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0421.jpg</a> (fichier joint)<br>
+14/01/2026, 21:31 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: LORGES JÉRÉMY JULIEN </span><br>
+Numéro joignable : 0708559946<br>
+TN: 2536068345@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, MAQUIS BAOULÉ <br>
+<br>
+3 poteaux 👆👆<br>
+14/01/2026, 21:32 - Adou: ‎<a href="IMG-20251118-WA0425.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0425.jpg</a> (fichier joint)<br>
+14/01/2026, 21:33 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: OULA GUELA BONAIN CHARLOTTE </span><br>
+Numéro joignable : 0704141698<br>
+TN: 2536041343@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, LAC PAVE<br>
+<br>
+1 poteau 👆👆👆<br>
+14/01/2026, 21:34 - Adou: ‎<a href="IMG-20251118-WA0426.jpg" class="media-link" target="_blank">📎 IMG-20251118-WA0426.jpg</a> (fichier joint)<br>
+14/01/2026, 21:34 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: CABORE ILIASSA</span><br>
+Numéro joignable : 0779613818<br>
+TN: 2536068553@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, FRANCOPHONIE <br>
+1 poteau 👆👆 <Ce message a été modifié><br>
+14/01/2026, 21:40 - Adou: <br>
+14/01/2026, 21:40 - Adou: ‎<a href="IMG-20251120-WA0407.jpg" class="media-link" target="_blank">📎 IMG-20251120-WA0407.jpg</a> (fichier joint)<br>
+14/01/2026, 21:40 - Adou: ‎<a href="IMG-20251120-WA0408.jpg" class="media-link" target="_blank">📎 IMG-20251120-WA0408.jpg</a> (fichier joint)<br>
+14/01/2026, 21:40 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: GBEGBE AMANDINE </span><br>
+Numéro joignable :0566910314<br>
+TN: 2536041546@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, CITÉ CAISSE <br>
+<br>
+2 poteaux<br>
+14/01/2026, 21:43 - Adou: ‎<a href="IMG-20251201-WA0250.jpg" class="media-link" target="_blank">📎 IMG-20251201-WA0250.jpg</a> (fichier joint)<br>
+01 poteau implanté<br>
+14/01/2026, 21:43 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: AGBOHOUN GUEGUEHI MARTIAL </span><br>
+Numéro joignable : 0708151060<br>
+TN: 2536068897@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, Commissariat 1er arrondissement <br>
+<br>
+1 poteau 👆👆<br>
+14/01/2026, 21:47 - Adou: <br>
+14/01/2026, 21:47 - Adou: ‎<a href="IMG-20251202-WA0314.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0314.jpg</a> (fichier joint)<br>
+14/01/2026, 21:48 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: OUATTARA GNINWOYO EDITH</span><br>
+Numéro joignable : 0508673950<br>
+TN: 2536040885@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, Cité Caisse <br>
+<br>
+2 poteau 👆 <Ce message a été modifié><br>
+14/01/2026, 21:49 - Adou: <br>
+14/01/2026, 21:49 - Adou: ‎<a href="IMG-20251202-WA0315.jpg" class="media-link" target="_blank">📎 IMG-20251202-WA0315.jpg</a> (fichier joint)<br>
+14/01/2026, 21:50 - Adou: 'Nom du <span class="client-name">CLIENT : SIBY ANNE CHRISTELLE </span><br>
+- NUMÉRO: 0506896454<br>
+- TN: *2536045870@mtn.ci*<br>
+<br>
+2 poteau 👆👆 <Ce message a été modifié><br>
+14/01/2026, 21:56 - Adou: ‎<a href="IMG-20251212-WA0191.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0191.jpg</a> (fichier joint)<br>
+14/01/2026, 21:56 - Adou: ‎<a href="IMG-20251212-WA0193.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0193.jpg</a> (fichier joint)<br>
+14/01/2026, 21:57 - Adou: Nom du <span class="client-name">CLIENT : POMBO EVE MARIE ANGE </span><br>
+- NUMÉRO: 0757907353<br>
+- TN: *2536047313@mtn.ci*<br>
+<br>
+1 poteau 👆👆<br>
+14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0207.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0207.jpg</a> (fichier joint)<br>
+2 poteaux implantés.<br>
+14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0208.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0208.jpg</a> (fichier joint)<br>
+14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0215.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0215.jpg</a> (fichier joint)<br>
+14/01/2026, 21:58 - Adou: ‎<a href="IMG-20251213-WA0211.jpg" class="media-link" target="_blank">📎 IMG-20251213-WA0211.jpg</a> (fichier joint)<br>
+14/01/2026, 21:59 - Adou: 'Nom du <span class="client-name">CLIENT : AFFOU KOUAME </span><br>
+- NUMÉRO: +2250716410096<br>
+- TN: *2536045883@mtn.ci*<br>
+ 2 poteaux 👆👆<br>
+14/01/2026, 22:01 - Adou: ‎<a href="IMG-20251212-WA0191.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0191.jpg</a> (fichier joint)<br>
+14/01/2026, 22:01 - Adou: ‎<a href="IMG-20251212-WA0193.jpg" class="media-link" target="_blank">📎 IMG-20251212-WA0193.jpg</a> (fichier joint)<br>
+14/01/2026, 22:01 - Adou: Nom du <span class="client-name">CLIENT : MEH AHOU CECILIA </span><br>
+- NUMÉRO: 0749273281<br>
+- TN: *2536045237@mtn.ci*<br>
+<br>
+1 poteau 👆👆 <Ce message a été modifié><br>
+14/01/2026, 22:04 - Adou: ‎<a href="IMG-20251215-WA0225.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0225.jpg</a> (fichier joint)<br>
+01 poteau implanté 🚨🚨<br>
+14/01/2026, 22:04 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: BROU KOUACOU MARIUS CÉSAR </span><br>
+Numéro joignable : +2250758872544<br>
+TN: 2536046653@mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, LAC FRANCOPHONIE <br>
+<br>
+,👆👆<br>
+14/01/2026, 22:05 - Adou: ‎<a href="IMG-20251215-WA0234.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0234.jpg</a> (fichier joint)<br>
+01 poteau implanté 🚨🚨<br>
+14/01/2026, 22:07 - Adou: 'Nom du <span class="client-name">CLIENT : KONAN KOUASSI JULES GAUTIER N'DRI</span><br>
+- NUMÉRO: 0544826885<br>
+- TN: *2536045017@mtn.ci*<br>
+1 poteau 👆👆<br>
+14/01/2026, 22:08 - Adou: <br>
+14/01/2026, 22:08 - Adou: ‎<a href="IMG-20251215-WA0232.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0232.jpg</a> (fichier joint)<br>
+14/01/2026, 22:08 - Adou: ‎<a href="IMG-20251215-WA0233.jpg" class="media-link" target="_blank">📎 IMG-20251215-WA0233.jpg</a> (fichier joint)<br>
+14/01/2026, 22:08 - Adou: Nom du <span class="client-name">CLIENT : YEOULE CLAKO LANDRY </span><br>
+- NUMÉRO: 0757577710<br>
+- TN: *2536045740@mtn.ci*<br>
+<br>
+2 poteaux 👆👆<br>
+14/01/2026, 22:12 - Adou: ‎<a href="IMG-20251221-WA0001.jpg" class="media-link" target="_blank">📎 IMG-20251221-WA0001.jpg</a> (fichier joint)<br>
+14/01/2026, 22:13 - Adou: Nom du <span class="client-name">CLIENT : ANOUMAN AMAN PHILLIPE OLIVIER </span><br>
+- NUMÉRO: 0749747064<br>
+- TN: *2536042852@mtn.ci*<br>
+<br>
+1 poteau<br>
+14/01/2026, 22:19 - Adou: <br>
+14/01/2026, 22:19 - Adou: ‎<a href="IMG-20251227-WA0169.jpg" class="media-link" target="_blank">📎 IMG-20251227-WA0169.jpg</a> (fichier joint)<br>
+14/01/2026, 22:19 - Adou: ‎<a href="IMG-20251227-WA0170.jpg" class="media-link" target="_blank">📎 IMG-20251227-WA0170.jpg</a> (fichier joint)<br>
+14/01/2026, 22:20 - Adou: Nom du <span class="client-name">CLIENT : NEHINHOULOUKA GUY SERGE SEA </span><br>
+- NUMÉRO: 0768960550<br>
+- TN: *2536050512@mtn.ci*<br>
+<br>
+2 poteaux<br>
+14/01/2026, 22:22 - Adou: ‎<a href="IMG-20260114-WA0300.jpg" class="media-link" target="_blank">📎 IMG-20260114-WA0300.jpg</a> (fichier joint)<br>
+14/01/2026, 22:23 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client:  AKRE MOYA ANNE LOUANGE </span><br>
+Numéro joignable : +2250767896411<br>
+TN: 2536047828@mtn.ci<br>
+Forfait: 15.000f <br>
+  SAN PEDRO, LAC SICOGI<br>
+<br>
+1 poteau 👆👆<br>
+14/01/2026, 22:26 - Adou: ‎<a href="IMG-20251227-WA0171.jpg" class="media-link" target="_blank">📎 IMG-20251227-WA0171.jpg</a> (fichier joint)<br>
+14/01/2026, 22:27 - Adou: Nom du <span class="client-name">CLIENT : AFFOUE TATIANA PRISCA KOUASSI KOUAKOU </span><br>
+- NUMÉRO: 0708556806<br>
+- TN: *2536046828@mtn.ci*<br>
+<br>
+1 poteau 👆👆<br>
+14/01/2026, 22:29 - Adou: <br>
+14/01/2026, 22:29 - Adou: ‎<a href="IMG-20260114-WA0307.jpg" class="media-link" target="_blank">📎 IMG-20260114-WA0307.jpg</a> (fichier joint)<br>
+14/01/2026, 22:29 - Adou: ‎<a href="IMG-20260105-WA0256.jpg" class="media-link" target="_blank">📎 IMG-20260105-WA0256.jpg</a> (fichier joint)<br>
+14/01/2026, 22:29 - Adou: 'Nom du <span class="client-name">CLIENT : YAO KOFFI SERAPHIN </span><br>
+- NUMÉRO: 0508650125<br>
+- TN: *2536046588@mtn.ci*<br>
+<br>
+2 poteaux 👆👆👆<br>
+14/01/2026, 22:30 - Adou: <br>
+14/01/2026, 22:30 - Adou: ‎<a href="IMG-20260105-WA0257.jpg" class="media-link" target="_blank">📎 IMG-20260105-WA0257.jpg</a> (fichier joint)<br>
+14/01/2026, 22:30 - Adou: ‎<a href="IMG-20260105-WA0258.jpg" class="media-link" target="_blank">📎 IMG-20260105-WA0258.jpg</a> (fichier joint)<br>
+14/01/2026, 22:31 - Adou: 'Nom du <span class="client-name">CLIENT : MELEDJE ARMEL AMARI </span><br>
+- NUMÉRO: 07 07 23 3394<br>
+- TN: *2536048200@mtn.ci*<br>
+<br>
+2 poteaux 👆👆👆<br>
+14/01/2026, 22:34 - Adou: ‎<a href="IMG-20260108-WA0277.jpg" class="media-link" target="_blank">📎 IMG-20260108-WA0277.jpg</a> (fichier joint)<br>
+14/01/2026, 22:34 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: KONE KIDOU ELIAS</span><br>
+Numéro joignable : 0789761185<br>
+TN: 2536050798mtn.ci<br>
+1 poteau 👆👆<br>
+17/01/2026, 01:55 - Adou: ‎<a href="IMG-20251216-WA0145.jpg" class="media-link" target="_blank">📎 IMG-20251216-WA0145.jpg</a> (fichier joint)<br>
+17/01/2026, 01:55 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : LEGRE YANKALA FULGENCE</span><br>
+<br>
+Numéro joignable: 0546732741<br>
+TN: 2536046880@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, nitoro<br>
+<br>
+1 poteau<br>
+👆👆<br>
+17/01/2026, 02:53 - Adou: ‎<a href="IMG-20260117-WA0001.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0001.jpg</a> (fichier joint)<br>
+17/01/2026, 02:53 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : KOFFI LEA N'GUESSAN</span><br>
+<br>
+Numéro joignable: 0748753731<br>
+TN: 2536050451@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, NITORO<br>
+<br>
+1 poteau 👆👆👆<br>
+17/01/2026, 02:55 - Adou: ‎<a href="IMG-20260117-WA0002.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0002.jpg</a> (fichier joint)<br>
+17/01/2026, 02:55 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : KRAMO KOUAME RAYMOND </span><br>
+<br>
+Numéro joignable: 0709112727<br>
+TN: 2536049928@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, BALMER <br>
+<br>
+1 poteau 👆👆👆👆<br>
+17/01/2026, 02:56 - Adou: <br>
+17/01/2026, 02:56 - Adou: ‎<a href="IMG-20260117-WA0003.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0003.jpg</a> (fichier joint)<br>
+17/01/2026, 02:56 - Adou: ‎<a href="IMG-20260117-WA0004.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0004.jpg</a> (fichier joint)<br>
+17/01/2026, 02:57 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: KOUAKOU KOUADIO AMADOU</span><br>
+Numéro joignable : 0759774244<br>
+TN: 2536047080@mtn.ci<br>
+SN:485754435D0F5B5<br>
+Forfait: 10.000f <br>
+  NITORO EXTENSION,EN FACE DE L'HÔTEL DUNAMIS<br>
+<br>
+2 poteaux 👆👆👆<br>
+17/01/2026, 02:58 - Adou: <br>
+17/01/2026, 02:58 - Adou: ‎<a href="IMG-20260117-WA0006.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0006.jpg</a> (fichier joint)<br>
+17/01/2026, 02:58 - Adou: ‎<a href="IMG-20260117-WA0007.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0007.jpg</a> (fichier joint)<br>
+17/01/2026, 02:59 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : DEBORAH LAURE GNONSOA</span><br>
+<br>
+Numéro joignable: 0768407443<br>
+TN: 2536048223@mtn.ci<br>
+SN:485754435D507FB5<br>
+Forfait: 10.000f <br>
+SAN PEDRO, nitoro extension <br>
+<br>
+2 poteaux 👆👆<br>
+17/01/2026, 03:00 - Adou: <br>
+17/01/2026, 03:00 - Adou: ‎<a href="IMG-20260117-WA0008.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0008.jpg</a> (fichier joint)<br>
+17/01/2026, 03:00 - Adou: ‎<a href="IMG-20260117-WA0009.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0009.jpg</a> (fichier joint)<br>
+17/01/2026, 03:00 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : DAGO BONI JUNIOR </span><br>
+<br>
+Numéro joignable: 0576670111<br>
+TN: 2536046529@mtn.ci<br>
+Forfait: 10.000f <br>
+SAN PEDRO, cité nitro <br>
+<br>
+2 poteaux 👆👆<br>
+17/01/2026, 03:02 - Adou: <br>
+17/01/2026, 03:02 - Adou: ‎<a href="IMG-20260117-WA0010.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0010.jpg</a> (fichier joint)<br>
+17/01/2026, 03:02 - Adou: ‎<a href="IMG-20260117-WA0011.jpg" class="media-link" target="_blank">📎 IMG-20260117-WA0011.jpg</a> (fichier joint)<br>
+17/01/2026, 03:03 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client : DOUE LEHI NESSEKON AIMEE</span><br>
+<br>
+Numéro joignable: 0565316242<br>
+TN: 2536050860@mtn.ci<br>
+SN:ZTEGD9D0AFBB<br>
+Forfait: 10.000f <br>
+SAN PEDRO, lac chapelle<br>
+<br>
+2 poteaux 👆👆<br>
+20/01/2026, 11:45 - Adou: ‎<a href="IMG-20260120-WA0430.jpg" class="media-link" target="_blank">📎 IMG-20260120-WA0430.jpg</a> (fichier joint)<br>
+20/01/2026, 11:46 - Adou: *Étude*<br>
+<br>
+<span class="client-name">Client: KONE KIDOU ELIAS</span><br>
+Numéro joignable : 0789761185<br>
+TN: 2536050798mtn.ci<br>
+Forfait: 10.000f <br>
+  SAN PEDRO, ÉCOLE MÉTHODISTE <br>
+<br>
+1 poteaux<br>
 
-        <!-- Data Table -->
-        <div class="data-table">
-            <div class="table-header">
-                <h3>Liste des Clients FTTH</h3>
-                <input type="text" class="search-box" id="searchBox" placeholder="Rechercher client..." onkeyup="searchClients()">
-            </div>
-            <table id="clientTable">
-                <thead>
-                    <tr>
-                        <th>Nom et Prénoms</th>
-                        <th>Contact Principal</th>
-                        <th>Contact Secondaire</th>
-                        <th>Ville/Commune</th>
-                        <th>Quartier</th>
-                        <th>Numéro FTTH</th>
-                        <th>Statut</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="clientTableBody"></tbody>
-            </table>
         </div>
     </div>
-
-    <div class="notification" id="notification">
-        Action effectuée avec succès !
-    </div>
-
+    
     <script>
-        // Enregistrement du service worker pour PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('sw.js').then(function(registration) {
-                    console.log('Service Worker enregistré avec succès:', registration);
-                }, function(err) {
-                    console.log('Erreur Service Worker:', err);
-                });
-            });
-        }
-        // Sauvegarde les modifications du client depuis l'onglet Gérer Client, y compris les photos des poteaux à implanter
-        function saveGererClient() {
-            const id = window.currentEditId;
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            client.nom = document.getElementById('gererClientName').value;
-            client.contactPrincipal = document.getElementById('gererContactPrincipal').value;
-            client.contactSecondaire = document.getElementById('gererContactSecondaire').value;
-            client.ville = document.getElementById('gererVille').value;
-            client.quartier = document.getElementById('gererQuartier').value;
-            client.numeroFTTH = document.getElementById('gererNumeroFTTH').value;
-            client.status = document.getElementById('gererStatusInstallation').value;
-            client.dateInstallation = document.getElementById('gererDateInstallation').value;
-            client.images = {
-                boxRecto: document.getElementById('gererBoxRecto').src || '',
-                boxVerso: document.getElementById('gererBoxVerso').src || '',
-                recuPhoto: document.getElementById('gererRecuPhoto').src || '',
-                pbPhoto: document.getElementById('gererPbPhoto').src || '',
-            };
-            // Gestion des photos de poteaux à implanter
-            if (document.getElementById('poteauxImplanterCheck').checked) {
-                const n = parseInt(document.getElementById('nombrePoteaux').value) || 1;
-                client.images.poteauxImplanter = [];
-                for (let i = 1; i <= n; i++) {
-                    const img = document.getElementById('photoPoteau'+i);
-                    client.images.poteauxImplanter.push(img ? img.src : '');
-                }
-                client.nombrePoteaux = n;
-            } else {
-                client.images.poteauxImplanter = [];
-                client.nombrePoteaux = 0;
-            }
-            client.matos = {
-                metreCable: document.getElementById('gererMetreCable').value,
-                pincesTendeurs: document.getElementById('gererPincesTendeurs').value,
-                colliers: document.getElementById('gererColliers').value,
-                attachesMurales: document.getElementById('gererAttachesMurales').value,
-                smoov: document.getElementById('gererSmoov').value,
-                pto: document.getElementById('gererPTO').value,
-                python: document.getElementById('gererPython').value,
-                gainesAnnelees: document.getElementById('gererGainesAnnelees').value,
-                jarretiere: document.getElementById('gererJarretiere').value
-            };
-            localStorage.setItem('ftthClients', JSON.stringify(clients));
-            showNotification('Gestion client enregistrée !');
-            updateClientTable();
-        }
-
-        // Inclut les photos des poteaux dans le bilan exporté
-        function copierBilanGererClient() {
-            const id = window.currentEditId;
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            let bilan = `Bilan Client FTTH\nNom: ${client.nom}\nContact: ${client.contactPrincipal}\nVille: ${client.ville}\nQuartier: ${client.quartier}\nNuméro FTTH: ${client.numeroFTTH}\nStatut: ${getStatusText(client.status)}\nDate: ${client.dateInstallation || client.dateCreation}\n\nMatériel:\n`;
-            for (const [k, v] of Object.entries(client.matos || {})) {
-                bilan += `- ${k}: ${v}\n`;
-            }
-            bilan += '\nImages :';
-            bilan += `\n- Box Recto: ${client.images.boxRecto ? '[Image enregistrée]' : 'Non renseignée'}`;
-            bilan += `\n- Box Verso: ${client.images.boxVerso ? '[Image enregistrée]' : 'Non renseignée'}`;
-            bilan += `\n- Reçu: ${client.images.recuPhoto ? '[Image enregistrée]' : 'Non renseignée'}`;
-            bilan += `\n- PB: ${client.images.pbPhoto ? '[Image enregistrée]' : 'Non renseignée'}`;
-            if (client.nombrePoteaux > 0) {
-                bilan += `\n- Poteaux à implanter: ${client.nombrePoteaux}`;
-                client.images.poteauxImplanter.forEach((img, idx) => {
-                    bilan += `\n   Poteau ${idx+1}: ${img ? '[Image enregistrée]' : 'Non renseignée'}`;
-                });
-            }
-            navigator.clipboard.writeText(bilan);
-            showNotification('Bilan copié dans le presse-papier !');
-        }
-
-        function exporterBilanGererClient() {
-            const id = window.currentEditId;
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            let bilan = `Bilan Client FTTH\nNom: ${client.nom}\nContact: ${client.contactPrincipal}\nVille: ${client.ville}\nQuartier: ${client.quartier}\nNuméro FTTH: ${client.numeroFTTH}\nStatut: ${getStatusText(client.status)}\nDate: ${client.dateInstallation || client.dateCreation}\n\nMatériel:\n`;
-            for (const [k, v] of Object.entries(client.matos || {})) {
-                bilan += `- ${k}: ${v}\n`;
-            }
-            bilan += '\nImages :';
-            bilan += `\n- Box Recto: ${client.images.boxRecto ? '[Image enregistrée]' : 'Non renseignée'}`;
-            bilan += `\n- Box Verso: ${client.images.boxVerso ? '[Image enregistrée]' : 'Non renseignée'}`;
-            bilan += `\n- Reçu: ${client.images.recuPhoto ? '[Image enregistrée]' : 'Non renseignée'}`;
-            bilan += `\n- PB: ${client.images.pbPhoto ? '[Image enregistrée]' : 'Non renseignée'}`;
-            if (client.nombrePoteaux > 0) {
-                bilan += `\n- Poteaux à implanter: ${client.nombrePoteaux}`;
-                client.images.poteauxImplanter.forEach((img, idx) => {
-                    bilan += `\n   Poteau ${idx+1}: ${img ? '[Image enregistrée]' : 'Non renseignée'}`;
-                });
-            }
-            const blob = new Blob([bilan], {type: 'text/plain'});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `bilan_client_${client.nom.replace(/\s+/g,'_')}.txt`;
-            link.click();
-        }
-        // Affiche ou masque les champs pour les poteaux à implanter
-        function togglePoteauxFields() {
-            const checked = document.getElementById('poteauxImplanterCheck').checked;
-            document.getElementById('poteauxFields').style.display = checked ? 'block' : 'none';
-            if (checked) {
-                renderPoteauxPhotos();
-            } else {
-                document.getElementById('poteauxPhotosContainer')?.remove();
-            }
-        }
-
-        // Génère dynamiquement les champs de photos pour chaque poteau
-        function renderPoteauxPhotos() {
-            let container = document.getElementById('poteauxPhotosContainer');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'poteauxPhotosContainer';
-                document.getElementById('poteauxFields').appendChild(container);
-            }
-            const n = parseInt(document.getElementById('nombrePoteaux').value) || 1;
-            container.innerHTML = '';
-            for (let i = 1; i <= n; i++) {
-                const div = document.createElement('div');
-                div.className = 'form-group';
-                div.innerHTML = `<label>Photo Poteau ${i}</label>
-                    <input type="file" accept="image/*" capture="environment" onchange="previewImage(event, 'photoPoteau${i}')">
-                    <img id="photoPoteau${i}" style="width:100%;max-width:300px;margin-top:8px;border-radius:8px;display:none;" />`;
-                container.appendChild(div);
-            }
-        }
-
-        // Met à jour les photos quand le nombre change
-        document.getElementById('nombrePoteaux').addEventListener('change', function() {
-            renderPoteauxPhotos();
-        });
-        // Prévisualisation image pour l'onglet Gérer Client
-        function previewImage(event, id) {
-            const input = event.target;
-            const img = document.getElementById(id);
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                };
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                img.src = '';
-                img.style.display = 'none';
-            }
-        }
-        // Sauvegarde les modifications du client depuis l'onglet Gérer Client
-        function saveGererClient() {
-            const id = window.currentEditId;
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            client.nom = document.getElementById('gererClientName').value;
-            client.contactPrincipal = document.getElementById('gererContactPrincipal').value;
-            client.contactSecondaire = document.getElementById('gererContactSecondaire').value;
-            client.ville = document.getElementById('gererVille').value;
-            client.quartier = document.getElementById('gererQuartier').value;
-            client.numeroFTTH = document.getElementById('gererNumeroFTTH').value;
-            client.status = document.getElementById('gererStatusInstallation').value;
-            client.dateInstallation = document.getElementById('gererDateInstallation').value;
-            client.images = {
-                boxRecto: document.getElementById('gererBoxRecto').src || '',
-                boxVerso: document.getElementById('gererBoxVerso').src || '',
-                recuPhoto: document.getElementById('gererRecuPhoto').src || '',
-                pbPhoto: document.getElementById('gererPbPhoto').src || '',
-                poteauxPhoto: document.getElementById('gererPoteauxPhoto').src || ''
-            };
-            client.matos = {
-                metreCable: document.getElementById('gererMetreCable').value,
-                pincesTendeurs: document.getElementById('gererPincesTendeurs').value,
-                colliers: document.getElementById('gererColliers').value,
-                attachesMurales: document.getElementById('gererAttachesMurales').value,
-                smoov: document.getElementById('gererSmoov').value,
-                pto: document.getElementById('gererPTO').value,
-                python: document.getElementById('gererPython').value,
-                gainesAnnelees: document.getElementById('gererGainesAnnelees').value,
-                jarretiere: document.getElementById('gererJarretiere').value
-            };
-            localStorage.setItem('ftthClients', JSON.stringify(clients));
-            showNotification('Gestion client enregistrée !');
-            updateClientTable();
-        }
-        // Gestion modale
-        function closeGestionModal() {
-            document.getElementById('gestionModal').style.display = 'none';
-        }
-
-        function openGestionModal(id) {
-            const client = clients.find(c => c.id === id);
-            if (client) {
-                currentEditId = id;
-                document.getElementById('gestionClientName').value = client.nom;
-                document.getElementById('gestionContactPrincipal').value = client.contactPrincipal;
-                document.getElementById('gestionContactSecondaire').value = client.contactSecondaire || '';
-                document.getElementById('gestionVille').value = client.ville;
-                document.getElementById('gestionQuartier').value = client.quartier || '';
-                document.getElementById('gestionNumeroFTTH').value = client.numeroFTTH || '';
-                document.getElementById('gestionStatusInstallation').value = client.status;
-                document.getElementById('gestionDateInstallation').value = client.dateInstallation || '';
-                document.getElementById('gestionModal').style.display = 'flex';
-            }
-        }
-
-        function previewImage(event, id) {
-            const input = event.target;
-            const img = document.getElementById(id);
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                };
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                img.src = '';
-                img.style.display = 'none';
-            }
-        }
-
-        function saveGestionClient() {
-            // Récupérer les valeurs du formulaire
-            const id = currentEditId;
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            // Infos modifiables
-            client.nom = document.getElementById('gestionClientName').value;
-            client.contactPrincipal = document.getElementById('gestionContactPrincipal').value;
-            client.contactSecondaire = document.getElementById('gestionContactSecondaire').value;
-            client.ville = document.getElementById('gestionVille').value;
-            client.quartier = document.getElementById('gestionQuartier').value;
-            client.numeroFTTH = document.getElementById('gestionNumeroFTTH').value;
-            client.status = document.getElementById('gestionStatusInstallation').value;
-            client.dateInstallation = document.getElementById('gestionDateInstallation').value;
-            // Images
-            client.images = {
-                boxRecto: document.getElementById('boxRecto').src || '',
-                boxVerso: document.getElementById('boxVerso').src || '',
-                recuPhoto: document.getElementById('recuPhoto').src || '',
-                pbPhoto: document.getElementById('pbPhoto').src || '',
-                poteauxPhoto: document.getElementById('poteauxPhoto').src || ''
-            };
-            // Matériel
-            client.matos = {
-                metreCable: document.getElementById('metreCable').value,
-                pincesTendeurs: document.getElementById('pincesTendeurs').value,
-                colliers: document.getElementById('colliers').value,
-                attachesMurales: document.getElementById('attachesMurales').value,
-                smoov: document.getElementById('smoov').value,
-                pto: document.getElementById('pto').value,
-                python: document.getElementById('python').value,
-                gainesAnnelees: document.getElementById('gainesAnnelees').value,
-                jarretiere: document.getElementById('jarretiere').value
-            };
-            localStorage.setItem('ftthClients', JSON.stringify(clients));
-            showNotification('Gestion client enregistrée !');
-            closeGestionModal();
-            updateClientTable();
-        }
-
-        function copierBilanClient() {
-            // Génère un bilan formaté et copie dans le presse-papier
-            const id = currentEditId;
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            let bilan = `Bilan Client FTTH\nNom: ${client.nom}\nContact: ${client.contactPrincipal}\nVille: ${client.ville}\nQuartier: ${client.quartier}\nNuméro FTTH: ${client.numeroFTTH}\nStatut: ${getStatusText(client.status)}\nDate: ${client.dateInstallation || client.dateCreation}\n\nMatériel:\n`;
-            for (const [k, v] of Object.entries(client.matos || {})) {
-                bilan += `- ${k}: ${v}\n`;
-            }
-            bilan += '\nImages: (voir interface)';
-            navigator.clipboard.writeText(bilan);
-            showNotification('Bilan copié dans le presse-papier !');
-        }
-
-        function exporterBilanClient() {
-            // Exporter le bilan en fichier texte
-            const id = currentEditId;
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            let bilan = `Bilan Client FTTH\nNom: ${client.nom}\nContact: ${client.contactPrincipal}\nVille: ${client.ville}\nQuartier: ${client.quartier}\nNuméro FTTH: ${client.numeroFTTH}\nStatut: ${getStatusText(client.status)}\nDate: ${client.dateInstallation || client.dateCreation}\n\nMatériel:\n`;
-            for (const [k, v] of Object.entries(client.matos || {})) {
-                bilan += `- ${k}: ${v}\n`;
-            }
-            bilan += '\nImages: (voir interface)';
-            const blob = new Blob([bilan], {type: 'text/plain'});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `bilan_client_${client.nom.replace(/\s+/g,'_')}.txt`;
-            link.click();
-        }
-
-        function genererBilanComplet() {
-            // Génère un bilan complet de tous les clients
-            let bilan = 'Bilan Complet FTTH\n\n';
-            clients.forEach(client => {
-                bilan += `Nom: ${client.nom}\nContact: ${client.contactPrincipal}\nVille: ${client.ville}\nQuartier: ${client.quartier}\nNuméro FTTH: ${client.numeroFTTH}\nStatut: ${getStatusText(client.status)}\nDate: ${client.dateInstallation || client.dateCreation}\n`;
-                bilan += 'Matériel:\n';
-                for (const [k, v] of Object.entries(client.matos || {})) {
-                    bilan += `- ${k}: ${v}\n`;
-                }
-                bilan += '\n-----------------------------\n';
-            });
-            const blob = new Blob([bilan], {type: 'text/plain'});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'bilan_complet_ftth.txt';
-            link.click();
-        }
-        let clients = JSON.parse(localStorage.getItem('ftthClients')) || [];
-        let currentEditId = null;
-        let statusChart = null;
-
-        // Vérifier si les dépendances sont chargées
-        window.addEventListener('load', () => {
-            if (!window.Chart || !window.html2canvas || !window.jspdf) {
-                showNotification('Erreur : Certaines dépendances (Chart.js, html2canvas, jsPDF) n\'ont pas été chargées. Vérifiez votre connexion Internet.', '#f44336');
-            } else {
-                updateClientTable();
-                updateDashboardStats();
-                generateReport();
-            }
-        });
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            if (tabName === 'dashboard') {
-                updateDashboardStats();
-            } else if (tabName === 'export') {
-                generateReport();
-            }
-        }
-
-        function validatePhoneNumber(phone) {
-            const phoneRegex = /^[0-9]{10}$/;
-            return phone === '' || phoneRegex.test(phone);
-        }
-
-        function addClient() {
-            const clientData = {
-                id: currentEditId || Date.now(),
-                nom: document.getElementById('clientName').value.trim(),
-                contactPrincipal: document.getElementById('contactPrincipal').value.trim(),
-                contactSecondaire: document.getElementById('contactSecondaire').value.trim(),
-                ville: document.getElementById('ville').value,
-                quartier: document.getElementById('quartier').value.trim(),
-                numeroFTTH: document.getElementById('numeroFTTH').value.trim(),
-                status: document.getElementById('statusInstallation').value,
-                dateInstallation: document.getElementById('dateInstallation').value,
-                dateCreation: currentEditId ? clients.find(c => c.id === currentEditId)?.dateCreation || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-            };
-
-            if (!clientData.nom || !clientData.contactPrincipal || !clientData.ville) {
-                showNotification('Veuillez remplir tous les champs obligatoires (*) !', '#f44336');
-                return;
-            }
-
-            if (!validatePhoneNumber(clientData.contactPrincipal) || !validatePhoneNumber(clientData.contactSecondaire)) {
-                showNotification('Les numéros de téléphone doivent contenir 10 chiffres !', '#f44336');
-                return;
-            }
-
-            if (currentEditId) {
-                const index = clients.findIndex(client => client.id === currentEditId);
-                if (index !== -1) {
-                    clients[index] = clientData;
-                    showNotification('Client modifié avec succès !');
-                    currentEditId = null;
-                    document.getElementById('formTitle').textContent = 'Nouveau Client FTTH';
-                    document.getElementById('saveButtonText').textContent = 'Ajouter Client';
-                }
-            } else {
-                clients.push(clientData);
-                showNotification('Client ajouté avec succès !');
-            }
-
-            localStorage.setItem('ftthClients', JSON.stringify(clients));
-            updateClientTable();
-            updateDashboardStats();
-            generateReport();
-            clearAddForm();
-        }
-
-        function clearAddForm() {
-            document.getElementById('clientName').value = '';
-            document.getElementById('contactPrincipal').value = '';
-            document.getElementById('contactSecondaire').value = '';
-            document.getElementById('ville').value = '';
-            document.getElementById('quartier').value = '';
-            document.getElementById('numeroFTTH').value = '';
-            document.getElementById('statusInstallation').value = 'pending';
-            document.getElementById('dateInstallation').value = '';
-            currentEditId = null;
-            document.getElementById('formTitle').textContent = 'Nouveau Client FTTH';
-            document.getElementById('saveButtonText').textContent = 'Ajouter Client';
-        }
-
-        function updateClientTable(filteredClients = clients) {
-            const tableBody = document.getElementById('clientTableBody');
-            tableBody.innerHTML = '';
-
-            filteredClients.forEach(client => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${client.nom}</td>
-                    <td>${client.contactPrincipal}</td>
-                    <td>${client.contactSecondaire || '-'}</td>
-                    <td>${client.ville}</td>
-                    <td>${client.quartier || '-'}</td>
-                    <td>${client.numeroFTTH || '-'}</td>
-                    <td><span class="status-badge status-${client.status}">${getStatusText(client.status)}</span></td>
-                    <td>${client.dateInstallation || client.dateCreation}</td>
-                    <td class="action-buttons">
-                        <button class="btn-primary btn-small" onclick="openGestionModal(${client.id})">Gérer</button>
-                        <button class="btn-danger btn-small" onclick="deleteClient(${client.id})">Supprimer</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-
-        function getStatusText(status) {
-            const statusMap = {
-                pending: 'En attente',
-                tirage: 'Tirage',
-                encours: 'En cours',
-                attenteconfig: 'En attente de configuration',
-                connexionactive: 'Connexion active',
-                inactif: 'Connexion inactive',
-                pascredit: 'Pas de crédit',
-                noneligible: 'Non éligible',
-                completed: 'Terminée',
-                cancelled: 'Annulée'
-            };
-            return statusMap[status] || status;
-        }
-
-        function editClient(id) {
-            const client = clients.find(c => c.id === id);
-            if (client) {
-                currentEditId = id;
-                document.getElementById('clientName').value = client.nom;
-                document.getElementById('contactPrincipal').value = client.contactPrincipal;
-                document.getElementById('contactSecondaire').value = client.contactSecondaire || '';
-                document.getElementById('ville').value = client.ville;
-                document.getElementById('quartier').value = client.quartier || '';
-                document.getElementById('numeroFTTH').value = client.numeroFTTH || '';
-                document.getElementById('statusInstallation').value = client.status;
-                document.getElementById('dateInstallation').value = client.dateInstallation || '';
-                
-                document.getElementById('formTitle').textContent = 'Modifier Client FTTH';
-                document.getElementById('saveButtonText').textContent = 'Modifier Client';
-                
-                switchTab('add-client');
-                showNotification('Mode édition activé !');
-            }
-        }
-
-        function deleteClient(id) {
-            if (confirm('Voulez-vous vraiment supprimer ce client ?')) {
-                clients = clients.filter(client => client.id !== id);
-                localStorage.setItem('ftthClients', JSON.stringify(clients));
-                updateClientTable();
-                updateDashboardStats();
-                generateReport();
-                showNotification('Client supprimé avec succès !');
-            }
-        }
-
-        function searchClients() {
-            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            const filteredClients = clients.filter(client =>
-                client.nom.toLowerCase().includes(searchTerm) ||
-                client.contactPrincipal.includes(searchTerm) ||
-                (client.contactSecondaire && client.contactSecondaire.includes(searchTerm)) ||
-                client.ville.toLowerCase().includes(searchTerm) ||
-                (client.quartier && client.quartier.toLowerCase().includes(searchTerm)) ||
-                (client.numeroFTTH && client.numeroFTTH.toLowerCase().includes(searchTerm))
-            );
-            updateClientTable(filteredClients);
-        }
-
-        function updateDashboardStats() {
-            const totalClients = clients.length;
-            const activeInstallations = clients.filter(c => c.status === 'active').length;
-            const pendingInstallations = clients.filter(c => c.status === 'pending').length;
-            const today = new Date().toISOString().split('T')[0];
-            const completedToday = clients.filter(c => c.dateInstallation === today && c.status === 'completed').length;
-
-            document.getElementById('totalClients').textContent = totalClients;
-            document.getElementById('activeInstallations').textContent = activeInstallations;
-            document.getElementById('pendingInstallations').textContent = pendingInstallations;
-            document.getElementById('completedToday').textContent = completedToday;
-        }
-
-        function loadSampleData() {
-            const sampleData = [
-                {
-                    id: Date.now() + 1,
-                    nom: "KOFFI KOUAKOU JEAN",
-                    contactPrincipal: "0555588630",
-                    contactSecondaire: "0585530043",
-                    ville: "COCODY",
-                    quartier: "Angré",
-                    numeroFTTH: "2536070716@mtn.ci",
-                    status: "active",
-                    dateInstallation: "2025-09-10",
-                    dateCreation: "2025-09-01"
-                },
-                {
-                    id: Date.now() + 2,
-                    nom: "YAO AMA ELISE",
-                    contactPrincipal: "0777889900",
-                    contactSecondaire: "",
-                    ville: "YOPOUGON",
-                    quartier: "Siporex",
-                    numeroFTTH: "2536070717@mtn.ci",
-                    status: "pending",
-                    dateInstallation: "",
-                    dateCreation: "2025-09-05"
-                }
-            ];
-
-            clients = [...sampleData];
-            localStorage.setItem('ftthClients', JSON.stringify(clients));
-            updateClientTable();
-            updateDashboardStats();
-            generateReport();
-            showNotification('Données exemple chargées !');
-        }
-
-        function exportToCSV() {
-            const filter = document.getElementById('exportFilter').value;
-            let filteredClients = filter === 'all' ? clients : clients.filter(c => c.status === filter);
-
-            const headers = ['Nom', 'Contact Principal', 'Contact Secondaire', 'Ville', 'Quartier', 'Numéro FTTH', 'Statut', 'Date Installation', 'Date Création'];
-            const csvContent = [
-                headers.join(','),
-                ...filteredClients.map(client =>
-                    [
-                        `"${client.nom}"`,
-                        client.contactPrincipal,
-                        client.contactSecondaire || '-',
-                        client.ville,
-                        client.quartier || '-',
-                        client.numeroFTTH || '-',
-                        getStatusText(client.status),
-                        client.dateInstallation || '-',
-                        client.dateCreation
-                    ].join(',')
-                )
-            ].join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `ftth_clients_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-            showNotification('Export CSV effectué !');
-        }
-
-        function performExport() {
-            const format = document.getElementById('exportFormat').value;
-            const filter = document.getElementById('exportFilter').value;
-            let filteredClients = filter === 'all' ? clients : clients.filter(c => c.status === filter);
-
-            if (format === 'csv') {
-                exportToCSV();
-            } else if (format === 'json') {
-                const blob = new Blob([JSON.stringify(filteredClients, null, 2)], { type: 'application/json' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `ftth_clients_${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                showNotification('Export JSON effectué !');
-            } else if (format === 'txt') {
-                const txtContent = filteredClients.map(client =>
-                    `Nom: ${client.nom}\n` +
-                    `Contact Principal: ${client.contactPrincipal}\n` +
-                    `Contact Secondaire: ${client.contactSecondaire || '-'}\n` +
-                    `Ville: ${client.ville}\n` +
-                    `Quartier: ${client.quartier || '-'}\n` +
-                    `Numéro FTTH: ${client.numeroFTTH || '-'}\n` +
-                    `Statut: ${getStatusText(client.status)}\n` +
-                    `Date Installation: ${client.dateInstallation || '-'}\n` +
-                    `Date Création: ${client.dateCreation}\n` +
-                    `------------------------`
-                ).join('\n');
-                
-                const blob = new Blob([txtContent], { type: 'text/plain' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `ftth_clients_${new Date().toISOString().split('T')[0]}.txt`;
-                link.click();
-                showNotification('Export TXT effectué !');
-            }
-        }
-
-        function copyToClipboard() {
-            const filter = document.getElementById('exportFilter').value;
-            let filteredClients = filter === 'all' ? clients : clients.filter(c => c.status === filter);
+        // Fonction pour ajouter des classes CSS automatiquement
+        function stylizeContent() {
+            // Styliser les numéros de téléphone
+            const contentDiv = document.querySelector('.content');
+            const textNodes = [];
             
-            const textContent = filteredClients.map(client =>
-                `Nom: ${client.nom}\n` +
-                `Contact Principal: ${client.contactPrincipal}\n` +
-                `Contact Secondaire: ${client.contactSecondaire || '-'}\n` +
-                `Ville: ${client.ville}\n` +
-                `Quartier: ${client.quartier || '-'}\n` +
-                `Numéro FTTH: ${client.numeroFTTH || '-'}\n` +
-                `Statut: ${getStatusText(client.status)}\n` +
-                `Date Installation: ${client.dateInstallation || '-'}\n` +
-                `Date Création: ${client.dateCreation}`
-            ).join('\n\n');
-
-            navigator.clipboard.writeText(textContent).then(() => {
-                showNotification('Données copiées dans le presse-papiers !');
-            }).catch(() => {
-                showNotification('Erreur lors de la copie dans le presse-papiers !', '#f44336');
-            });
-        }
-
-        function clearAllData() {
-            if (confirm('Voulez-vous vraiment supprimer toutes les données ? Cette action est irréversible.')) {
-                clients = [];
-                localStorage.setItem('ftthClients', JSON.stringify(clients));
-                updateClientTable();
-                updateDashboardStats();
-                generateReport();
-                showNotification('Toutes les données ont été supprimées !');
-            }
-        }
-
-        function showNotification(message, bgColor = '#4CAF50') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.background = bgColor;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        function filterByPeriod(clients, period) {
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
-            const weekAgo = new Date(today.setDate(today.getDate() - 7)).toISOString().split('T')[0];
-            const monthAgo = new Date(today.setMonth(today.getMonth() - 1)).toISOString().split('T')[0];
-
-            if (period === 'today') {
-                return clients.filter(c => c.dateInstallation === todayStr || c.dateCreation === todayStr);
-            } else if (period === 'week') {
-                return clients.filter(c => (c.dateInstallation && c.dateInstallation >= weekAgo) || c.dateCreation >= weekAgo);
-            } else if (period === 'month') {
-                return clients.filter(c => (c.dateInstallation && c.dateInstallation >= monthAgo) || c.dateCreation >= monthAgo);
-            }
-            return clients;
-        }
-
-        function generateReport() {
-            if (!window.Chart) {
-                showNotification('Erreur : Chart.js non chargé. Le graphique ne peut pas être affiché.', '#f44336');
-                return;
-            }
-
-            const period = document.getElementById('reportPeriod').value;
-            const filteredClients = filterByPeriod(clients, period);
-
-            const stats = {
-                pending: filteredClients.filter(c => c.status === 'pending').length,
-                tirage: filteredClients.filter(c => c.status === 'tirage').length,
-                encours: filteredClients.filter(c => c.status === 'encours').length,
-                attenteconfig: filteredClients.filter(c => c.status === 'attenteconfig').length,
-                connexionactive: filteredClients.filter(c => c.status === 'connexionactive').length,
-                inactif: filteredClients.filter(c => c.status === 'inactif').length,
-                pascredit: filteredClients.filter(c => c.status === 'pascredit').length,
-                noneligible: filteredClients.filter(c => c.status === 'noneligible').length,
-                completed: filteredClients.filter(c => c.status === 'completed').length,
-                cancelled: filteredClients.filter(c => c.status === 'cancelled').length
-            };
-            const total = Object.values(stats).reduce((a, b) => a + b, 0);
-            const statuses = [
-                { key: 'pending', label: 'En attente', color: '#ff9800' },
-                { key: 'tirage', label: 'Tirage', color: '#039be5' },
-                { key: 'encours', label: 'En cours', color: '#fbc02d' },
-                { key: 'attenteconfig', label: 'En attente de configuration', color: '#8e24aa' },
-                { key: 'connexionactive', label: 'Connexion active', color: '#4CAF50' },
-                { key: 'inactif', label: 'Connexion inactive', color: '#757575' },
-                { key: 'pascredit', label: 'Pas de crédit', color: '#ff9800' },
-                { key: 'noneligible', label: 'Non éligible', color: '#b71c1c' },
-                { key: 'completed', label: 'Terminée', color: '#1e3c72' },
-                { key: 'cancelled', label: 'Annulée', color: '#f44336' }
-            ];
-
-            const reportTableBody = document.getElementById('reportTableBody');
-            reportTableBody.innerHTML = '';
-
-            statuses.forEach(status => {
-                const percentage = total > 0 ? ((stats[status.key] / total) * 100).toFixed(1) : 0;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><span class="status-badge status-${status.key}">${status.label}</span></td>
-                    <td>${stats[status.key]}</td>
-                    <td>${percentage}%</td>
-                `;
-                reportTableBody.appendChild(row);
-            });
-
-            if (statusChart) {
-                statusChart.destroy();
-            }
-
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            statusChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: statuses.map(s => s.label),
-                    datasets: [{
-                        data: [stats.pending, stats.active, stats.completed, stats.cancelled],
-                        backgroundColor: statuses.map(s => s.color),
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { size: 14, family: 'Segoe UI' } }
-                        },
-                        title: {
-                            display: true,
-                            text: `Répartition des Statuts (${period === 'all' ? 'Toutes périodes' : period === 'today' ? 'Aujourd\'hui' : period === 'week' ? 'Cette semaine' : 'Ce mois'})`,
-                            font: { size: 16, weight: 'bold' },
-                            color: '#1e3c72'
-                        }
+            function getTextNodes(node) {
+                if (node.nodeType === 3) {
+                    textNodes.push(node);
+                } else {
+                    for (let child of node.childNodes) {
+                        getTextNodes(child);
                     }
                 }
-            });
-        }
-
-        function exportReportAsImage() {
-            if (!window.html2canvas) {
-                showNotification('Erreur : html2canvas non chargé. Impossible d\'exporter l\'image.', '#f44336');
-                return;
             }
-
-            const chartContainer = document.querySelector('.chart-container');
-            html2canvas(chartContainer).then(canvas => {
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png');
-                link.download = `ftth_report_${new Date().toISOString().split('T')[0]}.png`;
-                link.click();
-                showNotification('Rapport exporté en image !');
-            }).catch(() => {
-                showNotification('Erreur lors de l\'exportation de l\'image !', '#f44336');
-            });
-        }
-
-        function exportReportAsPDF() {
-            if (!window.jspdf || !window.html2canvas) {
-                showNotification('Erreur : jsPDF ou html2canvas non chargé. Impossible d\'exporter le PDF.', '#f44336');
-                return;
-            }
-
-            const { jsPDF } = window.jspdf;
-            const chartContainer = document.querySelector('.chart-container');
-            html2canvas(chartContainer).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF();
-                pdf.setFont('helvetica', 'normal');
-                pdf.setFontSize(16);
-                pdf.text('Rapport des Statuts FTTH', 20, 20);
+            
+            getTextNodes(contentDiv);
+            
+            // Ajouter des classes basées sur le contenu
+            textNodes.forEach(node => {
+                const text = node.textContent;
+                const parent = node.parentNode;
                 
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                pdf.addImage(imgData, 'PNG', 20, 30, pdfWidth - 40, pdfHeight - 40);
-
-                pdf.setFontSize(12);
-                pdf.text('Résumé des Statuts', 20, pdfHeight + 50);
-                const reportTableBody = document.getElementById('reportTableBody');
-                let y = pdfHeight + 60;
-                reportTableBody.querySelectorAll('tr').forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    pdf.text(`${cells[0].textContent}: ${cells[1].textContent} (${cells[2].textContent})`, 20, y);
-                    y += 10;
-                });
-
-                pdf.save(`ftth_report_${new Date().toISOString().split('T')[0]}.pdf`);
-                showNotification('Rapport exporté en PDF !');
-            }).catch(() => {
-                showNotification('Erreur lors de l\'exportation du PDF !', '#f44336');
+                if (text.includes('Numéro joignable') || /\d10/.test(text)) {
+                    const span = document.createElement('span');
+                    span.className = 'phone-number';
+                    span.textContent = text;
+                    parent.replaceChild(span, node);
+                }
+                
+                if (text.includes('poteau')) {
+                    const span = document.createElement('span');
+                    span.className = 'poteaux-count';
+                    span.textContent = text;
+                    parent.replaceChild(span, node);
+                }
+                
+                if (text.includes('SAN PEDRO')) {
+                    const span = document.createElement('span');
+                    span.className = 'location';
+                    span.textContent = text;
+                    parent.replaceChild(span, node);
+                }
+                
+                if (text.includes('TN:')) {
+                    const span = document.createElement('span');
+                    span.className = 'tn-info';
+                    span.textContent = text;
+                    parent.replaceChild(span, node);
+                }
+                
+                if (text.includes('000f') || text.includes('Forfait:')) {
+                    const span = document.createElement('span');
+                    span.className = 'forfait';
+                    span.textContent = text;
+                    parent.replaceChild(span, node);
+                }
             });
         }
-
-        // Fonction d'importation de clients depuis une image de tableau (améliorée)
-        async function importClientsFromImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            showNotification('Analyse de l\'image en cours...');
-            try {
-                const result = await Tesseract.recognize(file, 'fra', { logger: m => console.log(m) });
-                const text = result.data.text;
-                if (!text || text.trim().length < 10) {
-                    showNotification('Aucun texte détecté. Essayez une image plus nette ou un tableau plus lisible.', '#f44336');
-                    return;
-                }
-                // Affichage du texte extrait pour vérification
-                alert('Texte extrait :\n' + text);
-                // Découpage des lignes et colonnes
-                const rows = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-                let imported = 0;
-                rows.forEach(row => {
-                    // Découpage par tabulation, point-virgule ou espaces multiples
-                    const cols = row.split(/\t|;| {2,}/);
-                    // On suppose l'ordre des colonnes comme sur l'image :
-                    // Nom, Contact, Second contact, Ville, Quartier, Numéro FTTH
-                    if (cols.length >= 6 && cols[0].length > 2 && /[0-9]{8,}/.test(cols[2])) {
-                        const clientData = {
-                            id: Date.now() + Math.floor(Math.random()*10000),
-                            nom: cols[0].trim(),
-                            contactPrincipal: cols[2].trim(),
-                            contactSecondaire: cols[3].trim(),
-                            ville: cols[4].trim(),
-                            quartier: cols[5].trim(),
-                            numeroFTTH: cols[6] ? cols[6].trim() : '',
-                            status: 'pending',
-                            dateInstallation: '',
-                            dateCreation: new Date().toISOString().split('T')[0]
-                        };
-                        clients.push(clientData);
-                        imported++;
-                    }
+        
+        // Exécuter au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page WhatsApp chargée');
+            console.log('Médias trouvés :', 196);
+            
+            // Styliser le contenu
+            stylizeContent();
+            
+            // Vérifier les liens médias
+            document.querySelectorAll('.media-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    console.log('Ouverture du média :', this.href);
                 });
-                if (imported === 0) {
-                    showNotification('Aucune ligne client détectée. Vérifiez le format du tableau.', '#f44336');
-                    return;
-                }
-                localStorage.setItem('ftthClients', JSON.stringify(clients));
-                updateClientTable();
-                updateDashboardStats();
-                generateReport();
-                showNotification(imported + ' client(s) importé(s) !');
-            } catch (e) {
-                showNotification('Erreur lors de l\'analyse de l\'image.', '#f44336');
-            }
-        }
+            });
+        });
     </script>
 </body>
 </html>
